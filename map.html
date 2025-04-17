@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_6b17d29da5d657da1eb19a3cde768cdd {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_6b17d29da5d657da1eb19a3cde768cdd" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_6b17d29da5d657da1eb19a3cde768cdd = L.map(
+                "map_6b17d29da5d657da1eb19a3cde768cdd",
+                {
+                    center: [14.4, 121.25],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "maxBounds": [
+[
+14.17,
+121,
+],
+[
+14.53,
+121.45,
+],
+],
+  "zoom": 12,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_c977d8bca7524040c22e336d74cb774a = L.tileLayer(
+                "https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.jpg",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "\u0026copy; CNES, Distribution Airbus DS, \u00a9 Airbus DS, \u00a9 PlanetObserver (Contains Copernicus Data) | \u0026copy; \u003ca href=\"https://www.stadiamaps.com/\" target=\"_blank\"\u003eStadia Maps\u003c/a\u003e \u0026copy; \u003ca href=\"https://openmaptiles.org/\" target=\"_blank\"\u003eOpenMapTiles\u003c/a\u003e \u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_c977d8bca7524040c22e336d74cb774a.addTo(map_6b17d29da5d657da1eb19a3cde768cdd);
+        
+    
+            var circle_marker_880a25b9b5698d62b7964cec963d4ea2 = L.circleMarker(
+                [14.53, 121.0],
+                {"bubblingMouseEvents": true, "color": "#3388ff", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#3388ff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
+            ).addTo(map_6b17d29da5d657da1eb19a3cde768cdd);
+        
+    
+            circle_marker_880a25b9b5698d62b7964cec963d4ea2.bindTooltip(
+                `<div>
+                     Upper Left
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_7149140bc6ae52adf7496b0154c3f23e = L.circleMarker(
+                [14.17, 121.0],
+                {"bubblingMouseEvents": true, "color": "#3388ff", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#3388ff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
+            ).addTo(map_6b17d29da5d657da1eb19a3cde768cdd);
+        
+    
+            circle_marker_7149140bc6ae52adf7496b0154c3f23e.bindTooltip(
+                `<div>
+                     Lower Left
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_613a0ff0c1fdab7f914d72739459de5e = L.circleMarker(
+                [14.17, 121.45],
+                {"bubblingMouseEvents": true, "color": "#3388ff", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#3388ff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
+            ).addTo(map_6b17d29da5d657da1eb19a3cde768cdd);
+        
+    
+            circle_marker_613a0ff0c1fdab7f914d72739459de5e.bindTooltip(
+                `<div>
+                     Lower Right
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_996b762d8d574994ecefaaa5ba0bf4ec = L.circleMarker(
+                [14.53, 121.45],
+                {"bubblingMouseEvents": true, "color": "#3388ff", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#3388ff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
+            ).addTo(map_6b17d29da5d657da1eb19a3cde768cdd);
+        
+    
+            circle_marker_996b762d8d574994ecefaaa5ba0bf4ec.bindTooltip(
+                `<div>
+                     Upper Right
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+</script>
+</html>
