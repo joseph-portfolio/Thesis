@@ -45,4 +45,4 @@ def filter_markers():
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))  # Default to 5000 for local testing
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=port, debug=True)
