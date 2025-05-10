@@ -16,7 +16,12 @@ OUTPUT_PREFIX = "Dataset/output/stage_1"
 SUPPORTED_EXTS = (".jpg", ".jpeg", ".png")
 
 # Initialize S3 client
-s3 = boto3.client('s3')
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=os.getenv("aws_access_key_id"),
+    aws_secret_access_key=os.getenv("aws_secret_access_key"),
+    region_name='ap-southeast-1'
+)
 
 # Load Faster R-CNN with ResNet-50 backbone
 def get_model(num_classes):
