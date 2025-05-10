@@ -1,9 +1,10 @@
+import os
 import boto3
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
-dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
+dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1', aws_access_key_id=os.getenv('aws_access_key_id'), aws_secret_access_key=os.getenv('aws_secret_access_key'))
 table = dynamodb.Table('MicroplasticData')
 
 @app.route("/")
