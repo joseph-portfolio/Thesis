@@ -11,8 +11,8 @@ from io import BytesIO
 
 # AWS S3 settings
 BUCKET_NAME = "rpi-upload-bucket"
-INPUT_PREFIX = "Dataset/samples/"
-OUTPUT_PREFIX = "Dataset/output/stage_1"
+INPUT_PREFIX = "Dataset/samples/stage_2"
+OUTPUT_PREFIX = "Dataset/output/stage_2"
 SUPPORTED_EXTS = (".jpg", ".jpeg", ".png")
 
 # Initialize S3 client
@@ -126,7 +126,7 @@ def save_cropped_boxes(image, s3_key, prediction, threshold=0.5):
             print(f"Uploaded cropped box {i} to S3: {s3_output_key}")
 
 def main():
-    num_classes = 2
+    num_classes = 6
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     model = get_model(num_classes)
