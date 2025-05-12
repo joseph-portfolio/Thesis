@@ -51,15 +51,24 @@ function addMarkers(markerData) {
 
 // Initialize slider
 $(function () {
-    const formatDate = timestamp => new Date(timestamp * 1000).toISOString().split('T')[0];
+    const formatDate = timestamp => {
+        const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
+        return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    };
 
-    const currentDate = Math.floor(new Date().getTime() / 1000); // Current date in seconds
-    const startDate = new Date('2025-04-01').getTime() / 1000; // Start date in seconds
+    // Get the user's local timezone offset in seconds
+    const timezoneOffset = new Date().getTimezoneOffset() * 60;
+
+    // Calculate current date in the user's local timezone
+    const currentDate = Math.floor(new Date().getTime() / 1000) - timezoneOffset;
+
+    // Start date (April 1, 2025) adjusted to the user's local timezone
+    const startDate = new Date('2025-04-01T00:00:00Z').getTime() / 1000 - timezoneOffset;
 
     $("#slider-range").slider({
         range: true,
         min: startDate,
-        max: currentDate, // Set max to the current date
+        max: currentDate, // Set max to the current date in the user's local timezone
         step: 86400, // One day
         values: [
             startDate,
