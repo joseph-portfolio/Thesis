@@ -53,14 +53,17 @@ function addMarkers(markerData) {
 $(function () {
     const formatDate = timestamp => new Date(timestamp * 1000).toISOString().split('T')[0];
 
+    const currentDate = Math.floor(new Date().getTime() / 1000); // Current date in seconds
+    const startDate = new Date('2025-04-01').getTime() / 1000; // Start date in seconds
+
     $("#slider-range").slider({
         range: true,
-        min: new Date('2025-04-01').getTime() / 1000,
-        max: new Date('2025-07-01').getTime() / 1000,
+        min: startDate,
+        max: currentDate, // Set max to the current date
         step: 86400, // One day
         values: [
-            new Date('2025-05-01').getTime() / 1000,
-            new Date('2025-06-01').getTime() / 1000
+            startDate,
+            currentDate
         ],
         slide: function (event, ui) {
             $("#amount").text(
