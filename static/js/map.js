@@ -51,6 +51,8 @@ function addMarkers(markerData) {
     });
 }
 
+let currentFetchController = null;
+
 // Initialize slider
 $(function () {
     // Helper to pad numbers to two digits
@@ -97,6 +99,12 @@ $(function () {
                 formatDisplayDate(ui.values[0]) + " - " + formatDisplayDate(ui.values[1])
             );
 
+            // Abort previous fetch if still running
+            if (currentFetchController) {
+                currentFetchController.abort();
+            }
+            currentFetchController = new AbortController();
+
             // Fetch filtered markers
             fetch('/filter_markers', {
                 method: 'POST',
@@ -104,11 +112,17 @@ $(function () {
                 body: JSON.stringify({
                     min_date: formatDate(ui.values[0], false),
                     max_date: formatDate(ui.values[1], true)
-                })
+                }),
+                signal: currentFetchController.signal
             })
             .then(response => response.json())
             .then(data => {
                 addMarkers(data);
+            })
+            .catch(err => {
+                if (err.name !== 'AbortError') {
+                    console.error(err);
+                }
             });
         }
     });
