@@ -53,7 +53,9 @@ function addMarkers(markerData) {
 $(function () {
     const formatDate = timestamp => {
         const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
-        return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+        const pad = n => n < 10 ? '0' + n : n;
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} `
+             + `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
     };
 
     // Get the user's local timezone offset in seconds
