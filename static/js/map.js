@@ -6,8 +6,8 @@ const bounds = [
 
 // Initialize the map with zoom and boundary restrictions
 const map = L.map('map', {
-    center: [14.4, 121.25],
-    zoom: 10,
+    center: [14.37, 121.25],
+    zoom: 11,
     minZoom: 10,
     maxZoom: 16,
     maxBounds: bounds,
@@ -43,7 +43,7 @@ function addMarkers(markerData) {
                 <b>Date:</b> ${data.date}<br>
                 <b>Polymers:</b> ${data.type}<br>
                 <b>Density:</b> ${data.density} pcs/cm³<br>
-                <img src="${data.image}" alt="Sample" style="max-width:200px;max-height:200px;display:block;margin-top:4px;">
+                <img src="${data.image}" alt="Sample" style="max-width:200px;max-height:200px;display:block;margin-top:4px;border-radius:16px;">
             </div>
         `);
         marker.addTo(map);
