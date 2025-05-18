@@ -92,3 +92,13 @@ header {
   white-space: nowrap;
 }
 
+/* === Popup Styles === */
+.popup-content-large {
+    min-width: 190px;
+    max-width: 250px;
+}
+.leaflet-popup-content {
+    width: auto !important;
+    max-width: 250px !important;
+}
+

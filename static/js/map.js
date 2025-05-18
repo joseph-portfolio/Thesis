@@ -39,10 +39,12 @@ function addMarkers(markerData) {
             fillColor: 'blue',
             fillOpacity: 0.7
         }).bindPopup(`
-            <b>Type:</b> ${data.type}<br>
-            <b>Density:</b> ${data.density} pcs/cm³<br>
-            <b>Date:</b> ${data.date}<br>
-            <b>Image:</b> ${data.image}
+            <div class="popup-content-large">
+                <b>Date:</b> ${data.date}<br>
+                <b>Polymers:</b> ${data.type}<br>
+                <b>Density:</b> ${data.density} pcs/cm³<br>
+                <img src="${data.image}" alt="Sample" style="max-width:200px;max-height:200px;display:block;margin-top:4px;">
+            </div>
         `);
         marker.addTo(map);
         markers.push(marker);
@@ -51,32 +53,48 @@ function addMarkers(markerData) {
 
 // Initialize slider
 $(function () {
-    const formatDate = timestamp => {
-        const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
-        return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    // Helper to pad numbers to two digits
+    const pad = n => n < 10 ? '0' + n : n;
+
+    // Format date as YYYY-MM-DD HH:MM:SS in UTC+8, with option for end of day
+    const formatDate = (timestamp, isMax = false) => {
+        const date = new Date((timestamp + 8 * 3600) * 1000); // shift to UTC+8
+        const time = isMax ? '23:59:59' : '00:00:00';
+        return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ${time}`;
     };
 
-    // Get the user's local timezone offset in seconds
-    const timezoneOffset = new Date().getTimezoneOffset() * 60;
+    // Format date as YYYY-MM-DD in UTC+8 for display
+    const formatDisplayDate = timestamp => {
+        const date = new Date((timestamp + 8 * 3600) * 1000);
+        return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+    };
 
-    // Calculate current date in the user's local timezone
-    const currentDate = Math.floor(new Date().getTime() / 1000) - timezoneOffset;
+    // Get today's midnight in UTC+8 as the slider's max value
+    const now = new Date();
+    const utc8Midnight = new Date(now.getTime() + 8 * 3600 * 1000);
+    utc8Midnight.setUTCHours(0, 0, 0, 0);
+    const maxSliderTimestamp = Math.floor(utc8Midnight.getTime() / 1000) - 8 * 3600;
 
-    // Start date (April 1, 2025) adjusted to the user's local timezone
-    const startDate = new Date('2025-04-01T00:00:00Z').getTime() / 1000 - timezoneOffset;
+    // Get April 1, 2025 midnight in UTC+8 as the slider's min value
+    const startSliderTimestamp = Math.floor(new Date('2025-04-01T00:00:00+08:00').getTime() / 1000);
 
+    // Initialize the slider
     $("#slider-range").slider({
         range: true,
-        min: startDate,
-        max: currentDate, // Set max to the current date in the user's local timezone
+        min: startSliderTimestamp,
+        max: maxSliderTimestamp,
         step: 86400, // One day
         values: [
-            startDate,
-            currentDate
+            startSliderTimestamp,
+            maxSliderTimestamp
         ],
         slide: function (event, ui) {
+            // Clamp right handle to maxSliderTimestamp
+            if (ui.values[1] > maxSliderTimestamp) {
+                ui.values[1] = maxSliderTimestamp;
+            }
             $("#amount").text(
-                formatDate(ui.values[0]) + " - " + formatDate(ui.values[1])
+                formatDisplayDate(ui.values[0]) + " - " + formatDisplayDate(ui.values[1])
             );
 
             // Fetch filtered markers
@@ -84,8 +102,8 @@ $(function () {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    min_date: formatDate(ui.values[0]),
-                    max_date: formatDate(ui.values[1])
+                    min_date: formatDate(ui.values[0], false),
+                    max_date: formatDate(ui.values[1], true)
                 })
             })
             .then(response => response.json())
@@ -95,9 +113,10 @@ $(function () {
         }
     });
 
+    // Set initial label
     const initialValues = $("#slider-range").slider("values");
     $("#amount").text(
-        formatDate(initialValues[0]) + " - " + formatDate(initialValues[1])
+        formatDisplayDate(initialValues[0]) + " - " + formatDisplayDate(initialValues[1])
     );
 
     // Fetch initial markers
@@ -105,8 +124,8 @@ $(function () {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            min_date: formatDate(initialValues[0]),
-            max_date: formatDate(initialValues[1])
+            min_date: formatDate(initialValues[0], false),
+            max_date: formatDate(initialValues[1], true)
         })
     })
     .then(response => response.json())
