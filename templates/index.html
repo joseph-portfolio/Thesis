@@ -17,20 +17,67 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
-    <header>
-        Microplastic Pollution Mapping in Laguna de Bay
-    </header>
-
-    <div class="map-container">
-        <div id="map"></div>
-
-        <!-- Date Range Slider -->
-        <div id="slider-range" class="slider-modern"></div>
-        <p class="slider-label">
-            <span id="amount" class="amount-display"></span>
-        </p>
+    <div class="app-shell">
+        <header class="main-header">
+            <a href="#" style="text-decoration: none;">
+                <div class="logo-title">
+                    <div class="logo-box">
+                        <div class="microplastic"></div>
+                        <div class="microplastic"></div>
+                        <div class="microplastic"></div>
+                        <div class="propeller"></div>
+                    </div>
+                    <span class="main-title">Microplastic Pollution</span>
+                </div>
+            </a>
+            <nav class="main-nav">
+                <a href="#" class="nav-link active">Map</a>
+                <a href="#" class="nav-link">About</a>
+                <a href="#" class="nav-link">Documentation</a>
+            </nav>
+        </header>
+        <div class="main-content">
+            <div class="map-card full-width">
+                <aside class="sidebar overlay">
+                    <div class="sidebar-title">Project Overview</div>
+                    <div class="sidebar-content">
+                        <p>This dashboard visualizes <b>microplastic pollution</b> in Laguna de Bay using spatial and temporal data.</p>
+                        <ul class="sidebar-list">
+                            <li><b>Samples:</b> <span id="sidebar-sample-count">—</span></li>
+                            <li><b>Latest Data:</b> <span id="sidebar-latest-date">—</span></li>
+                            <li><b>Map Markers:</b> <span id="sidebar-marker-count">—</span></li>
+                        </ul>
+                        <div class="sidebar-links">
+                            <a href="#" class="sidebar-link">Project Repo</a> ·
+                            <a href="#" class="sidebar-link">Documentation</a>
+                        </div>
+                    </div>
+                </aside>
+                <div class="map-area">
+                    <div id="map"></div>
+                    <div class="slider-overlay">
+                        <div class="slider-track-container">
+                            <div class="slider-track-background"></div>
+                            <div id="slider-range"></div>
+                        </div>
+                        <p class="slider-label">
+                            <span id="amount" class="amount-display"></span>
+                        </p>
+                    </div>
+                    <div class="heatmap-legend-overlay vertical-legend">
+                        <div class="heatmap-legend vertical">
+                            <div class="legend-gradient-vertical"></div>
+                            <div class="legend-label-vertical">
+                                <span class="legend-label-text">
+                                    Density <b>pcs/cm³</b>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
     <!-- Custom Scripts -->
     <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 </body>
