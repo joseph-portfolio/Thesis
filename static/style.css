@@ -622,14 +622,48 @@ body {
   align-items: center;
   font-size: 1rem;
 }
+.legend-gradient-container {
+  position: relative;
+  display: flex;
+  margin-right: 18px;
+}
+
 .legend-gradient-vertical {
   width: 16px;
   height: 240px;
   border-radius: 8px;
-  background: linear-gradient(180deg, red 0%, orange 16%, yellow 33%, green 50%, blue 66%, indigo 83%, violet 100%);
-  margin-right: 18px;
+  background: linear-gradient(180deg, #ff0000 0%, #ff8000 16.7%, #ffff00 33.3%, #00ff00 50%, #0000ff 66.7%, #4b0082 83.3%, #8a2be2 100%);
   border: 2px solid #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+.legend-markers {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 240px;
+  position: relative;
+  margin-left: 5px;
+}
+
+.legend-marker {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.legend-marker::before {
+  content: '';
+  width: 6px;
+  height: 1px;
+  background-color: #333;
+  margin-right: 4px;
+}
+
+.legend-marker span {
+  font-size: 0.75rem;
+  color: #333;
+  font-weight: 500;
 }
 .legend-label-vertical {
   display: flex;
