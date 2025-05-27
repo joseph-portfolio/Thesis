@@ -496,21 +496,14 @@ body {
   width: 60%;
   min-width: 400px;
   max-width: 800px;
-  background: rgba(247, 250, 252, 0.9);
+  background: transparent;
   border-radius: 14px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
-  border: 1px solid #e5e7eb;
   padding: 1rem 1.5rem 0.8rem 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: box-shadow 0.2s;
-  backdrop-filter: blur(4px);
 }
-.slider-overlay:hover {
-  box-shadow: 0 4px 24px rgba(37, 99, 235, 0.10);
-  border-color: #d1d5db;
-}
+/* No hover effect needed for transparent container */
 #slider-range {
   width: 100%;
   margin: 0 auto 0.5rem auto;
@@ -560,6 +553,7 @@ body {
   height: 8px;
   background: white;
   border-radius: 8px;
+  border: 1px solid #d1d5db;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   z-index: 1;
 }
