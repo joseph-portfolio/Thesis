@@ -16,6 +16,10 @@ table = dynamodb.Table('MicroplasticData')
 def index():
     return render_template("index.html")
 
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
 @app.route("/filter_markers", methods=["POST"])
 def filter_markers():
     data = request.get_json()

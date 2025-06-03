@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Microplastic Map</title>
+    <title>Microplastic Mapping</title>
 
     <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -27,13 +27,12 @@
                         <div class="microplastic"></div>
                         <div class="propeller"></div>
                     </div>
-                    <span class="main-title">Microplastic Pollution</span>
+                    <span class="main-title">Microplastic Mapping</span>
                 </div>
             </a>
             <nav class="main-nav">
                 <a href="#" class="nav-link active">Map</a>
-                <a href="#" class="nav-link">About</a>
-                <a href="#" class="nav-link">Documentation</a>
+                <a href="about" class="nav-link">About</a>
             </nav>
         </header>
         <div class="main-content">
@@ -41,15 +40,15 @@
                 <aside class="sidebar overlay">
                     <div class="sidebar-title">Project Overview</div>
                     <div class="sidebar-content">
-                        <p>This dashboard visualizes <b>microplastic pollution</b> in Laguna de Bay using spatial and temporal data.</p>
+                        <p>This project analyzes <b>microplastic samples</b> from <b>Laguna de Bay</b> collected by the <b><a href="/about" class="sidebar-link" style="text-decoration: none;">WSV</a></b>.</p>
                         <ul class="sidebar-list">
-                            <li><b>Samples:</b> <span id="sidebar-sample-count">—</span></li>
+                            <li><b>Total Samples:</b> <span id="sidebar-sample-count">—</span></li>
                             <li><b>Latest Data:</b> <span id="sidebar-latest-date">—</span></li>
-                            <li><b>Map Markers:</b> <span id="sidebar-marker-count">—</span></li>
+                            <li><b>Most Common Polymer Type:</b> <span id="sidebar-polymer-type">—</span></li>
+                            <li><b>Average Density:</b> <span id="sidebar-density">—</span></li>
                         </ul>
                         <div class="sidebar-links">
-                            <a href="#" class="sidebar-link">Project Repo</a> ·
-                            <a href="#" class="sidebar-link">Documentation</a>
+                            <a href="https://github.com/joseph-portfolio/Thesis" class="sidebar-link">Project Repo</a> ·
                         </div>
                     </div>
                 </aside>
