@@ -314,7 +314,8 @@ body {
 .sidebar-content {
   font-size: 1rem;
   color: #2d3748;
-  line-height: 1.6;
+  line-height: 1.4;
+  text-align: justify;
 }
 .sidebar-list {
   list-style: none;
