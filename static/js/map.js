@@ -102,7 +102,7 @@ function addMarkers(markerData) {
     const densities = markerData.map(data => {
         // Extract numeric value from the density string (e.g., '0.5 pcs/cm³' -> 0.5)
         return parseFloat(data.density) || 0;
-    });``
+    });
     const minDensity = Math.min(...densities);
     const maxDensity = Math.max(...densities);
     const densityRange = maxDensity - minDensity;
@@ -240,4 +240,50 @@ $(function () {
     .then(data => {
         addMarkers(data);
     });
+});
+
+// Function to update the "Last Updated" section dynamically
+function updateLastUpdated() {
+    fetch('/latest_date')
+        .then(response => response.json())
+        .then(data => {
+            const lastUpdatedElement = document.getElementById('last-updated');
+            if (data && data.latest_date) {
+                // Extract only the date part (YYYY-MM-DD)
+                const dateOnly = data.latest_date.split(' ')[0];
+                lastUpdatedElement.textContent = `Last Updated: ${dateOnly}`;
+            } else {
+                lastUpdatedElement.textContent = 'Last Updated: Data unavailable';
+            }
+        })
+        .catch(err => {
+            console.error('Error fetching latest date:', err);
+            const lastUpdatedElement = document.getElementById('last-updated');
+            lastUpdatedElement.textContent = 'Last Updated: Error fetching data';
+        });
+}
+
+// Fetch total samples from DynamoDB and update the sidebar
+function updateTotalSamples() {
+    fetch('/total_samples')
+        .then(response => response.json())
+        .then(data => {
+            const totalSamplesElement = document.getElementById('sidebar-sample-count');
+            if (data && data.total_samples) {
+                totalSamplesElement.textContent = data.total_samples;
+            } else {
+                totalSamplesElement.textContent = 'Data unavailable';
+            }
+        })
+        .catch(err => {
+            console.error('Error fetching total samples:', err);
+            const totalSamplesElement = document.getElementById('sidebar-sample-count');
+            totalSamplesElement.textContent = 'Error fetching data';
+        });
+}
+
+// Call updateLastUpdated and updateTotalSamples on page load
+document.addEventListener('DOMContentLoaded', () => {
+    updateLastUpdated();
+    updateTotalSamples();
 });

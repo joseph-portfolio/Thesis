@@ -12,6 +12,9 @@ dynamodb = boto3.resource(
 )
 table = dynamodb.Table('MicroplasticData')
 
+# Adding alias for reserved keyword
+ExpressionAttributeNames = {"#dt": "datetime"}
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -51,6 +54,27 @@ def filter_markers():
     ]
 
     return jsonify(marker_data)
+
+@app.route('/latest_date', methods=['GET'])
+def get_latest_date():
+    response = table.scan(
+        ProjectionExpression="#dt",
+        ExpressionAttributeNames={"#dt": "datetime"}
+    )
+    items = response.get('Items', [])
+    if not items:
+        return jsonify({"latest_date": None})
+
+    # Ensure 'datetime' is present in the items
+    latest_date = max(item.get('datetime') for item in items if 'datetime' in item)
+    return jsonify({"latest_date": latest_date})
+
+@app.route('/total_samples', methods=['GET'])
+def get_total_samples():
+    response = table.scan()
+    items = response.get('Items', [])
+    total_samples = len(items)
+    return jsonify({"total_samples": total_samples})
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))  # Default to 5000 for local testing

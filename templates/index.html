@@ -46,9 +46,9 @@
                             <li><b>Top Polymer:</b> <span id="sidebar-polymer-type">—</span></li>
                             <li><b>Avg. Density:</b> <span id="sidebar-density">—</span></li>                            
                         </ul>
-                        <div class="sidebar-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid rgba(229, 231, 235, 0.5);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: #6b7280; margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid rgba(229, 231, 235, 0.5);">
                             <a href="https://github.com/joseph-portfolio/Thesis" class="sidebar-link">Project Repo</a>
-                            <span style="font-size: 0.85rem; color: #6b7280;">Updated: <span id="sidebar-latest-date">—</span></span>
+                            <span id="last-updated">—</span>
                         </div>
                     </div>
                 </aside>
@@ -90,5 +90,23 @@
     </div>
     <!-- Custom Scripts -->
     <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script>
+        // Fetch total samples from DynamoDB and update the sidebar
+        fetch('/total_samples')
+            .then(response => response.json())
+            .then(data => {
+                const totalSamplesElement = document.getElementById('sidebar-sample-count');
+                if (data && data.total_samples) {
+                    totalSamplesElement.textContent = data.total_samples;
+                } else {
+                    totalSamplesElement.textContent = 'Data unavailable';
+                }
+            })
+            .catch(err => {
+                console.error('Error fetching total samples:', err);
+                const totalSamplesElement = document.getElementById('sidebar-sample-count');
+                totalSamplesElement.textContent = 'Error fetching data';
+            });
+    </script>
 </body>
 </html>
