@@ -3,6 +3,8 @@ from picamera2 import Picamera2
 from datetime import datetime, timezone, timedelta
 import boto3
 import tempfile
+from decimal import Decimal
+from get_location import get_location
 
 # Set raspberry pi datetime correctly first
 # AWS S3 settings
@@ -76,13 +78,25 @@ def capture_image_and_upload():
         else:
             new_sample_id = 1
 
+        # Get latitude and longitude from GPS
+        location = get_location()
+        if location:
+            latitude, longitude = location
+            latitude = Decimal(str(round(latitude, 6)))
+            longitude = Decimal(str(round(longitude, 6)))
+        else:
+            print("Failed to get GPS location. Placing it at center.")
+            latitude = Decimal("14.37")
+            longitude = Decimal("121.25")
+
         # Insert record into DynamoDB
         table.put_item(
             Item={
-                "sampleID": new_sample_id,  # Number type
+                "sampleID": new_sample_id,
                 "imageURL": image_url,
                 "datetime": timestamp,
-                # Add other attributes as needed
+                "latitude": latitude,
+                "longitude": longitude,
             }
         )
         print(f"Image URL inserted into DynamoDB with sampleID {new_sample_id}!")
