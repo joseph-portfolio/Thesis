@@ -218,6 +218,11 @@ $(function () {
                     console.error(err);
                 }
             });
+
+            // Update total samples dynamically based on slider values
+            const minDate = formatDate(ui.values[0], false);
+            const maxDate = formatDate(ui.values[1], true);
+            updateTotalSamples(minDate, maxDate);
         }
     });
 
@@ -263,27 +268,34 @@ function updateLastUpdated() {
         });
 }
 
-// Fetch total samples from DynamoDB and update the sidebar
-function updateTotalSamples() {
-    fetch('/total_samples')
-        .then(response => response.json())
-        .then(data => {
-            const totalSamplesElement = document.getElementById('sidebar-sample-count');
-            if (data && data.total_samples) {
-                totalSamplesElement.textContent = data.total_samples;
-            } else {
-                totalSamplesElement.textContent = 'Data unavailable';
-            }
-        })
-        .catch(err => {
-            console.error('Error fetching total samples:', err);
-            const totalSamplesElement = document.getElementById('sidebar-sample-count');
-            totalSamplesElement.textContent = 'Error fetching data';
-        });
+// Fetch total samples from DynamoDB with date range filter and update the sidebar
+function updateTotalSamples(minDate, maxDate) {
+    fetch('/total_samples', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ min_date: minDate, max_date: maxDate })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const totalSamplesElement = document.getElementById('sidebar-sample-count');
+        if (data && data.total_samples) {
+            totalSamplesElement.textContent = data.total_samples;
+        } else {
+            totalSamplesElement.textContent = '0';
+        }
+    })
+    .catch(err => {
+        console.error('Error fetching total samples:', err);
+        const totalSamplesElement = document.getElementById('sidebar-sample-count');
+        totalSamplesElement.textContent = 'Error fetching data';
+    });
 }
 
 // Call updateLastUpdated and updateTotalSamples on page load
 document.addEventListener('DOMContentLoaded', () => {
     updateLastUpdated();
-    updateTotalSamples();
+    
+    const minDate = '2025-04-01 00:00:00'; // Example start date
+    const maxDate = '2025-06-05 23:59:59'; // Example end date
+    updateTotalSamples(minDate, maxDate);
 });

@@ -69,9 +69,21 @@ def get_latest_date():
     latest_date = max(item.get('datetime') for item in items if 'datetime' in item)
     return jsonify({"latest_date": latest_date})
 
-@app.route('/total_samples', methods=['GET'])
+@app.route('/total_samples', methods=['POST'])
 def get_total_samples():
-    response = table.scan()
+    data = request.get_json()
+    min_date = data['min_date']
+    max_date = data['max_date']
+
+    # Scan DynamoDB for items within the date range
+    response = table.scan(
+        FilterExpression="#dt BETWEEN :min_date AND :max_date",
+        ExpressionAttributeNames={"#dt": "datetime"},
+        ExpressionAttributeValues={
+            ":min_date": min_date,
+            ":max_date": max_date
+        }
+    )
     items = response.get('Items', [])
     total_samples = len(items)
     return jsonify({"total_samples": total_samples})
