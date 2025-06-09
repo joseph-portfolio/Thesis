@@ -133,9 +133,115 @@ function addMarkers(markerData) {
                 <b>Date:</b> ${data.date}<br>
                 <b>Polymers:</b> ${data.type}<br>
                 <b>Density:</b> ${data.density} pcs/cm³<br>
-                <img src="${data.image}" alt="Sample" style="max-width:200px;max-height:200px;display:block;margin:8px auto;border-radius:8px;">
+                <img src="${data.image}" alt="Sample" class="sample-image" style="max-width:200px;max-height:200px;display:block;margin:8px auto;border-radius:8px;cursor:zoom-in;">
             </div>
         `);
+        
+        // Add click handler for image preview when popup opens
+        function handlePopupOpen(e) {
+            const popup = e.popup;
+            const content = popup.getElement();
+            const img = content ? content.querySelector('.sample-image') : null;
+            
+            if (!img) return;
+            
+            // Store the current popup reference
+            const currentPopup = popup;
+            
+            // Single click handler function
+            function handleImageClick() {
+                const overlay = document.getElementById('image-preview-overlay');
+                const previewImg = document.getElementById('preview-image');
+                const closeBtn = document.querySelector('.image-preview-close');
+                
+                if (!overlay || !previewImg) return;
+                
+                // Set the image source and show overlay
+                previewImg.src = this.src;
+                overlay.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                
+                // Clean up any existing handlers to prevent duplicates
+                overlay.removeEventListener('click', handleOverlayClick);
+                document.removeEventListener('keydown', handleEscapeKey);
+                
+                // Add new handlers
+                overlay.addEventListener('click', handleOverlayClick);
+                document.addEventListener('keydown', handleEscapeKey);
+                
+                // Stop propagation to prevent closing when clicking the image
+                if (previewImg.parentNode) {
+                    previewImg.parentNode.onclick = function(e) {
+                        e.stopPropagation();
+                    };
+                }
+            }
+            
+            // Handle overlay click (close when clicking outside the image or on close button)
+            function handleOverlayClick(e) {
+                const overlay = document.getElementById('image-preview-overlay');
+                const closeBtn = document.querySelector('.image-preview-close');
+                
+                // Check if click is on overlay background or close button
+                if (e.target === overlay || (closeBtn && closeBtn.contains(e.target))) {
+                    overlay.style.display = 'none';
+                    document.body.style.overflow = '';
+                    
+                    // Remove the event listeners to prevent memory leaks
+                    overlay.removeEventListener('click', handleOverlayClick);
+                    document.removeEventListener('keydown', handleEscapeKey);
+                }
+            }
+            
+            // Handle escape key press
+            function handleEscapeKey(e) {
+                if (e.key === 'Escape') {
+                    const overlay = document.getElementById('image-preview-overlay');
+                    if (overlay) {
+                        overlay.style.display = 'none';
+                        document.body.style.overflow = '';
+                    }
+                }
+            }
+            
+            // Clean up previous handlers and add new one
+            img.removeEventListener('click', handleImageClick);
+            img.addEventListener('click', handleImageClick);
+            
+            // Clean up when popup is closed
+            function cleanupPreview() {
+                const overlay = document.getElementById('image-preview-overlay');
+                if (overlay) {
+                    overlay.style.display = 'none';
+                    overlay.removeEventListener('click', handleOverlayClick);
+                }
+                document.removeEventListener('keydown', handleEscapeKey);
+                document.body.style.overflow = '';
+            }
+            
+            // Add close button click handler
+            const closeBtn = document.querySelector('.image-preview-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', cleanupPreview);
+            }
+            
+            // Clean up when popup is closed
+            popup._closeButton = popup._closeButton || (popup._container && popup._container.querySelector('.leaflet-popup-close-button'));
+            if (popup._closeButton) {
+                function popupCloseHandler() {
+                    cleanupPreview();
+                    if (currentPopup && currentPopup._closeButton) {
+                        currentPopup._closeButton.removeEventListener('click', popupCloseHandler);
+                    }
+                }
+                popup._closeButton.addEventListener('click', popupCloseHandler);
+            }
+        }
+        
+        // Remove any existing popupopen handler to prevent duplicates
+        marker.off('popupopen', handlePopupOpen);
+        // Add the popupopen handler
+        marker.on('popupopen', handlePopupOpen);
         
         // Add marker to map and array
         marker.addTo(map);
@@ -295,7 +401,19 @@ function updateTotalSamples(minDate, maxDate) {
 document.addEventListener('DOMContentLoaded', () => {
     updateLastUpdated();
     
-    const minDate = '2025-04-01 00:00:00'; // Example start date
-    const maxDate = '2025-06-05 23:59:59'; // Example end date
-    updateTotalSamples(minDate, maxDate);
+    // Get the initial slider values
+    const slider = $("#slider-range");
+    if (slider.length) {
+        const values = slider.slider("values");
+        const formatDate = timestamp => {
+            const date = new Date((timestamp + 8 * 3600) * 1000);
+            const pad = n => n < 10 ? '0' + n : n;
+            return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ` + 
+                   (timestamp === slider.slider("option", "max") ? '23:59:59' : '00:00:00');
+        };
+        
+        const minDate = formatDate(values[0]);
+        const maxDate = formatDate(values[1]);
+        updateTotalSamples(minDate, maxDate);
+    }
 });

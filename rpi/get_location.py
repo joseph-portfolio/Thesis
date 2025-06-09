@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 GPS Location Reader for Neo6M module
 Reads NMEA data from serial port and extracts latitude/longitude
@@ -132,7 +131,6 @@ def get_location(port='/dev/serial0', baudrate=9600, timeout_seconds=60):
         return None
 
 def main():
-    """Main function to get and display location"""
     print("Neo6M GPS Location Reader")
     print("=" * 30)
     
