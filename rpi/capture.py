@@ -5,6 +5,9 @@ import boto3
 import tempfile
 from decimal import Decimal
 from get_location import get_location
+from flask import Flask
+
+app = Flask(__name__)
 
 # Set raspberry pi datetime correctly first
 # AWS S3 settings
@@ -104,5 +107,13 @@ def capture_image_and_upload():
     finally:
         picam2.stop()
 
+@app.route('/capture', methods=['POST'])
+def capture_image_endpoint():
+    try:
+        capture_image_and_upload()
+        return {"message": "Image captured and uploaded successfully!"}, 200
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 if __name__ == "__main__":
-    capture_image_and_upload()
+    app.run(host='0.0.0.0', port=5000)
