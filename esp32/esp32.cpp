@@ -20,10 +20,10 @@ WebServer server(80);
 // ─── Function declarations ───
 void handleRoot();
 void drive(int cmd);
-void led(int l);
-void pnv(int p);
 void triggerPi();
 void cnc();
+void led(int l);
+void pnv(int p);
 
 // ─── Setup ───
 void setup() {
@@ -41,28 +41,20 @@ void setup() {
   Serial.println("\nWiFi connected. IP address: " + WiFi.localIP().toString());
 
   server.on("/", handleRoot);
-
-  // Directions
   server.on("/backward",  []() { drive(1); server.send(200, "text/plain", "Backward"); });
   server.on("/forward",   []() { drive(2); server.send(200, "text/plain", "Forward"); });
   server.on("/left",      []() { drive(3); server.send(200, "text/plain", "Left"); });
   server.on("/right",     []() { drive(4); server.send(200, "text/plain", "Right"); });
   server.on("/stop",      []() { drive(0); server.send(200, "text/plain", "Stop"); });
-
-  // Leds
-  server.on("/uvled",    []() { led(0); server.send(200, "text/plain", "UV LED"); });
-  server.on("/whtled",   []() { led(1); server.send(200, "text/plain", "White LED"); });
-  server.on("/noled",    []() { led(2); server.send(200, "text/plain", "Turn Off LED"); });
-
-  // Pumps and Valve
-  server.on("/pm1",      []() { pnv(0); server.send(200, "text/plain", "Pump 1 Activate"); });
-  server.on("/pm2",      []() { pnv(1); server.send(200, "text/plain", "Pump 2 Activate"); });
-  server.on("/pm3",      []() { pnv(2); server.send(200, "text/plain", "Pump 3 Activate"); });
-  server.on("/vlv",      []() { pnv(3); server.send(200, "text/plain", "Valve Activate"); });
-
-  // Image Capturing
-  server.on("/cnc",      []() { cnc(); server.send(200, "text/plain", "Collect and Capture"); });
-  server.on("/capture",  []() { triggerPi(); server.send(200, "text/plain", "Capture Image"); });
+  server.on("/cnc",       []() { cnc(); server.send(200, "text/plain", "Collect and Capture done"); });
+  server.on("/uvled",     []() { led(0); server.send(200, "text/plain", "UV LED"); });
+  server.on("/whtled",    []() { led(1); server.send(200, "text/plain", "White LED"); });
+  server.on("/noled",     []() { led(2); server.send(200, "text/plain", "Turn Off LED"); });
+  server.on("/pm1",       []() { pnv(0); server.send(200, "text/plain", "Pump 1 Activate"); });
+  server.on("/pm2",       []() { pnv(1); server.send(200, "text/plain", "Pump 2 Activate"); });
+  server.on("/pm3",       []() { pnv(2); server.send(200, "text/plain", "Pump 3 Activate"); });
+  server.on("/vlv",       []() { pnv(3); server.send(200, "text/plain", "Valve Activate"); });
+  server.on("/capture",   []() { triggerPi(); server.send(200, "text/plain", "Capture Image"); });
 
   server.begin();
 }
@@ -73,129 +65,66 @@ void loop() {
 
 // ─── Motor drive logic ───
 void drive(int cmd) {
-    switch (cmd) {
-        case 0: // stop
-            digitalWrite(in1, LOW); digitalWrite(in2, LOW); 
-            digitalWrite(in3, LOW); digitalWrite(in4, LOW);
-            break;
-        case 1: // backwards
-            digitalWrite(in1, HIGH); digitalWrite(in2, LOW); // ccw for motor right
-            digitalWrite(in3, HIGH); digitalWrite(in4, LOW); // cw for motor left
-            break;
-        case 2: // forward
-            digitalWrite(in1, LOW); digitalWrite(in2, HIGH); // cw for motor right
-            digitalWrite(in3, LOW); digitalWrite(in4, HIGH); // ccw for motor left
-            break;
-        case 3: // left
-            digitalWrite(in1, LOW); digitalWrite(in2, HIGH); // cw for motor right
-            digitalWrite(in3, HIGH); digitalWrite(in4, LOW); // cw motor left
-            break;
-        case 4: // right
-            digitalWrite(in1, HIGH); digitalWrite(in2, LOW); // ccw for motor right
-            digitalWrite(in3, LOW); digitalWrite(in4, HIGH); // ccw for motor left
-            break;
-    }
-}
-
-// ─── LED controls ───
-void led(int l) {
-    switch (l) {
-        case 0:
-        digitalWrite(uv, HIGH);
-        break;
-        case 1:
-        digitalWrite(wht, HIGH);
-        break;
-        case 2:
-        digitalWrite(uv, LOW); digitalWrite(wht, LOW);
-        break;
-    }
-}
-
-// ─── Pump and Valve controls ───
-void pnv(int p) {
-    switch (p) {
-        case 0:
-        digitalWrite(pm1, HIGH); delay(1500); digitalWrite(pm1, LOW);
-        break;
-        case 1:
-        digitalWrite(pm2, HIGH); delay(1500); digitalWrite(pm2, LOW);
-        break;
-        case 2:
-        digitalWrite(pm3, HIGH); delay(1500); digitalWrite(pm3, LOW);
-        break;
-        case 3:
-        digitalWrite(vlv, HIGH); delay(1500); digitalWrite(vlv, LOW);
-        break;
-    }
+  switch (cmd) {
+    case 0: digitalWrite(in1, LOW); digitalWrite(in2, LOW); digitalWrite(in3, LOW); digitalWrite(in4, LOW); break;
+    case 1: digitalWrite(in1, HIGH); digitalWrite(in2, LOW); digitalWrite(in3, HIGH); digitalWrite(in4, LOW); break;
+    case 2: digitalWrite(in1, LOW); digitalWrite(in2, HIGH); digitalWrite(in3, LOW); digitalWrite(in4, HIGH); break;
+    case 3: digitalWrite(in1, LOW); digitalWrite(in2, HIGH); digitalWrite(in3, HIGH); digitalWrite(in4, LOW); break;
+    case 4: digitalWrite(in1, HIGH); digitalWrite(in2, LOW); digitalWrite(in3, LOW); digitalWrite(in4, HIGH); break;
+  }
 }
 
 // ─── Notify Raspberry Pi ───
 void triggerPi() {
-    if (WiFi.status() == WL_CONNECTED) {
-        HTTPClient http;
-        String url = "http://" + String(pi_ip) + ":" + String(pi_port) + "/capture";
-        http.begin(url);
-        http.addHeader("Content-Type", "application/json");
-        int httpCode = http.POST("");  // Empty body
-
-        if (httpCode > 0) {
-            // HTTP request sent, check response code
-            if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_CREATED) {
-                Serial.println("Pi triggered successfully.");
-            } else {
-                Serial.print("Pi trigger failed, HTTP code: ");
-                Serial.println(httpCode);
-            }
-        } else {
-            Serial.print("HTTP POST failed, error: ");
-            Serial.println(http.errorToString(httpCode));
-        }
-        http.end();
-    } else {
-        Serial.println("WiFi not connected. Cannot trigger Pi.");
-    }
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    String url = "http://" + String(pi_ip) + ":" + String(pi_port) + "/capture";
+    http.begin(url);
+    http.addHeader("Content-Type", "application/json");
+    http.POST("");
+    http.end();
+  }
 }
 
 // ─── Collection and capture sequence ───
 void cnc() {
-  digitalWrite(pm1, HIGH);
-  delay(1500);
-
+  digitalWrite(pm1, HIGH); delay(1500);
   digitalWrite(pm1, LOW);
-  digitalWrite(vlv, HIGH);
-  delay(1500);
-
+  digitalWrite(vlv, HIGH); delay(1500);
   digitalWrite(vlv, LOW);
-  digitalWrite(uv, HIGH);
-  triggerPi(); 
-  delay(15000);
-
+  digitalWrite(uv, HIGH); triggerPi(); delay(15000);
   digitalWrite(uv, LOW);
-  digitalWrite(wht, HIGH);
-  triggerPi();
-  delay(15000);
-
+  digitalWrite(wht, HIGH); triggerPi(); delay(15000);
   digitalWrite(wht, LOW);
-  digitalWrite(vlv, HIGH);
-  digitalWrite(pm2, HIGH);
-  delay(1500);
-
-  digitalWrite(vlv, LOW);
-  delay(1500);
-
+  digitalWrite(vlv, HIGH); digitalWrite(pm2, HIGH); delay(1500);
+  digitalWrite(vlv, LOW); delay(1500);
   digitalWrite(pm2, LOW);
-  digitalWrite(pm3, HIGH);
-  delay(1500);
-  
+  digitalWrite(pm3, HIGH); delay(1500);
   digitalWrite(pm3, LOW);
+}
+
+void led(int l) {
+  switch (l) {
+    case 0: digitalWrite(uv, HIGH); break;
+    case 1: digitalWrite(wht, HIGH); break;
+    case 2: digitalWrite(uv, LOW); digitalWrite(wht, LOW); break;
+  }
+}
+
+void pnv(int p) {
+  switch (p) {
+    case 0: digitalWrite(pm1, HIGH); delay(1500); digitalWrite(pm1, LOW); break;
+    case 1: digitalWrite(pm2, HIGH); delay(1500); digitalWrite(pm2, LOW); break;
+    case 2: digitalWrite(pm3, HIGH); delay(1500); digitalWrite(pm3, LOW); break;
+    case 3: digitalWrite(vlv, HIGH); delay(1500); digitalWrite(vlv, LOW); break;
+  }
 }
 
 // ─── Root HTML ───
 void handleRoot() {
   server.send(200, "text/html", R"rawliteral(
     <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ESP32 WSV Control Panel</title>
+    <title>ESP32 Control</title>
     <style>
       button { width: 150px; height: 50px; font-size: 16px; margin: 5px; }
     </style></head><body style="text-align:center">
@@ -225,19 +154,11 @@ void handleRoot() {
           fetch('/cnc').then(r => r.text()).then(t => {
             alert(t);
             b.disabled = false; b.innerText = 'Collect and Capture';
-            fetchLogs();
           }).catch(e => {
             alert(e);
             b.disabled = false; b.innerText = 'Collect and Capture';
           });
         }
-        function fetchLogs() {
-          fetch('/log').then(r => r.text()).then(t => {
-            document.getElementById('logs').innerHTML = t;
-          });
-        }
-        setInterval(fetchLogs, 5000);
-        window.onload = fetchLogs;
       </script>
     </body></html>
   )rawliteral");
