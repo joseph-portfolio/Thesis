@@ -41,7 +41,7 @@ def prepare_image(image, device):
     return image_tensor.to(device)
 
 def get_class_name(class_id):
-    COCO_CLASSES = {0: "Background", 1: "Microplastics"}
+    COCO_CLASSES = {0: "Background", 1: "Polyethylene", 2: "Polypropylene", 3: "Polystyrene"}
     return COCO_CLASSES.get(class_id, "Unknown")
 
 def draw_boxes_and_save(image, s3_key, prediction, fig_size=(10, 10), threshold=0.5):
@@ -131,7 +131,7 @@ def save_cropped_boxes(image, s3_key, prediction, threshold=0.5):
             print(f"Uploaded cropped box {i} to S3: {s3_output_key}")
 
 def main():
-    num_classes = 6
+    num_classes = 4
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     model = get_model(num_classes)

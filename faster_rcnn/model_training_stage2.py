@@ -197,7 +197,7 @@ def main():
     val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
     print("Initializing model")
-    num_classes = 6  # PE, PP, Polyester, Non-plastic, Unknown + Background
+    num_classes = 4  # PE, PP, PS, + Background
     model = get_model(num_classes)
 
     # Move model to GPU if available
