@@ -1,4 +1,4 @@
 run.py
 model.tar.gz
 faster_rcnn/models/*
-
+my_model/model.pth
