@@ -7,8 +7,7 @@ https://sagemaker.readthedocs.io/en/stable/frameworks/pytorch/using_pytorch.html
 
 ## Sample JSON for this endpoint
 
-```
-json
+```json
     {
         "s3_image_url": "s3://rpi-upload-bucket/Dataset/train/1_jpg.rf.3bd160570ca04ce20d506e7d30bba9db.jpg",
         "density": "3.14",
