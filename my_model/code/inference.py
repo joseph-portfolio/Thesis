@@ -8,6 +8,7 @@ import io
 import boto3
 import os
 import matplotlib
+import json
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -23,17 +24,18 @@ def model_fn(model_dir):
     return model
 
 def input_fn(request_body, request_content_type):
-    import json
     if request_content_type == "application/json":
         return json.loads(request_body)
     raise ValueError("Unsupported content type: {}".format(request_content_type))
 
 def predict_fn(input_data, model):
-    s3_image_url = input_data["s3_image_url"]
+    image_url = input_data["image_url"]
     sample_id = input_data.get("sample_id", "sample")
     # Download image from S3
     s3 = boto3.client("s3")
-    bucket, key = s3_image_url.replace("s3://", "").split("/", 1)
+    url_parts = image_url.split(".s3.ap-southeast-1.amazonaws.com/")
+    bucket = url_parts[0].replace("https://", "")
+    key = url_parts[1]
     response = s3.get_object(Bucket=bucket, Key=key)
     image_bytes = response["Body"].read()
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
@@ -45,11 +47,13 @@ def predict_fn(input_data, model):
     ax.imshow(image)
     boxes = prediction[0]['boxes'].cpu().numpy()
     scores = prediction[0]['scores'].cpu().numpy()
+    box_count = 0
     for box, score in zip(boxes, scores):
         if score > 0.5:
             x_min, y_min, x_max, y_max = box
-            ax.add_patch(plt.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min,
-                                       linewidth=2, edgecolor='r', facecolor='none'))
+            ax.add_patch(plt.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, linewidth=2, edgecolor='magenta', facecolor='none'))
+            ax.text(x_min, y_min - 5, f"{score:.2f}", color='cyan', fontsize=10)
+            box_count += 1
     ax.axis('off')
     buf = io.BytesIO()
     plt.savefig(buf, format='PNG', bbox_inches='tight')
@@ -58,11 +62,10 @@ def predict_fn(input_data, model):
     # Upload annotated image to S3
     annotated_key = f"annotated/{sample_id}_annotated.png"
     s3.upload_fileobj(buf, bucket, annotated_key, ExtraArgs={"ContentType": "image/png"})
-    annotated_url = f"s3://{bucket}/{annotated_key}"
-    return {"annotated_image_url": annotated_url}
+    annotated_url = f"https://{bucket}.s3.ap-southeast-1.amazonaws.com/{annotated_key}"
+    return {"annotated_image_url": annotated_url, "box_count": box_count}
 
 def output_fn(prediction, accept):
-    import json
     if accept == "application/json":
         return json.dumps(prediction), "application/json"
     raise ValueError("Unsupported accept type: {}".format(accept))

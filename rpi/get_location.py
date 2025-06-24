@@ -82,8 +82,9 @@ def get_location(port='/dev/serial0', baudrate=9600, timeout_seconds=60):
     Returns:
         tuple: (latitude, longitude) when GPS fix is obtained, or None if no fix is obtained
     """
+    ser = None
     try:
-        ser = serial.Serial(port, baudrate, timeout=1)
+        ser = serial.Serial(port, baudrate, timeout=0.5)
         print(f"Reading GPS data from {port}...")
         print("Waiting for GPS fix... (this may take a few minutes)")
         print("Press Ctrl+C to stop")
@@ -91,44 +92,35 @@ def get_location(port='/dev/serial0', baudrate=9600, timeout_seconds=60):
         start_time = time.time()
         
         while True:
+            elapsed_time = time.time() - start_time
+            if elapsed_time > timeout_seconds:
+                print(f"Timeout reached ({timeout_seconds} seconds). No GPS fix obtained.")
+                break
             try:
-                # Check if timeout has been reached
-                elapsed_time = time.time() - start_time
-                if elapsed_time > timeout_seconds:
-                    print(f"Timeout reached ({timeout_seconds} seconds). No GPS fix obtained.")
-                    ser.close()
-                    return None
-                
                 line = ser.readline().decode('ascii', errors='ignore').strip()
-                
                 if line.startswith('$GPRMC'):
                     result = parse_gprmc(line)
                     if result:
-                        ser.close()
                         return result
-                
                 elif line.startswith('$GPGGA'):
                     result = parse_gpgga(line)
                     if result:
-                        ser.close()
                         return result
-                
                 # Show some activity
                 if line.startswith('$'):
                     print(f"Received: {line[:20]}...")
-                    
             except UnicodeDecodeError:
                 continue
-                
-        ser.close()
-        return None
-        
     except serial.SerialException as e:
         print(f"Serial port error: {e}")
         return None
     except KeyboardInterrupt:
         print("\nInterrupted by user")
         return None
+    finally:
+        if ser:
+            ser.close()
+    return None
 
 def main():
     print("Neo6M GPS Location Reader")

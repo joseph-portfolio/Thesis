@@ -6,6 +6,7 @@ import tempfile
 from decimal import Decimal
 from get_location import get_location
 from flask import Flask
+import json
 
 app = Flask(__name__)
 
@@ -30,6 +31,14 @@ dynamodb = boto3.resource(
     aws_secret_access_key=os.getenv("aws_secret_access_key")
 )
 table = dynamodb.Table('MicroplasticData')
+
+# Initialize SageMaker
+runtime = boto3.client(
+    'sagemaker-runtime',
+    region_name='ap-southeast-1',
+    aws_access_key_id=os.getenv("aws_access_key_id"),
+    aws_secret_access_key=os.getenv("aws_secret_access_key")
+)
 
 def capture_image_and_upload():
     # Initialize the camera
@@ -81,6 +90,24 @@ def capture_image_and_upload():
         else:
             new_sample_id = 1
 
+        # Call the inference endpoint
+        payload = {
+            "image_url": image_url,
+            "sample_id": str(new_sample_id)
+        }
+        print(f"Calling inference endpoint with: {payload}")
+        try:
+            response = runtime.invoke_endpoint(
+                EndpointName='detect-microplastics',
+                ContentType='application/json',
+                Body=json.dumps(payload)
+            )
+            inference_result = json.loads(response['Body'].read())
+            print(f"Inference result: {inference_result}")
+        except Exception as e:
+            print(f"Error calling inference endpoint: {e}")
+            inference_result = None
+
         # Get latitude and longitude from GPS
         location = get_location()
         if location:
@@ -93,15 +120,25 @@ def capture_image_and_upload():
             longitude = Decimal("121.25")
 
         # Insert record into DynamoDB
-        table.put_item(
-            Item={
-                "sampleID": new_sample_id,
-                "imageURL": image_url,
-                "datetime": timestamp,
-                "latitude": latitude,
-                "longitude": longitude,
-            }
-        )
+        item = {
+            "sampleID": new_sample_id,
+            "imageURL": image_url,
+            "datetime": timestamp,
+            "latitude": latitude,
+            "longitude": longitude,
+        }
+        if inference_result:
+            annotated_url = inference_result.get("annotated_image_url")
+            box_count = inference_result.get("box_count")
+            if annotated_url is not None:
+                item["annotatedImageURL"] = annotated_url
+            if box_count is not None:
+                item["boxCount"] = box_count
+                try:
+                    item["density"] = float(box_count) / 70 # Volume of water
+                except Exception:
+                    item["density"] = None
+        table.put_item(Item=item)
         print(f"Image URL inserted into DynamoDB with sampleID {new_sample_id}!")
 
     finally:
