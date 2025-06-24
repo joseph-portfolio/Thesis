@@ -168,7 +168,8 @@ function addMarkers(markerData) {
                 <b>Date:</b> ${data.date}<br>
                 <b>Polymers:</b> ${data.type}<br>
                 <b>Density:</b> ${data.density} pcs/cm³<br>
-                <img src="${data.image}" alt="Sample" class="sample-image" style="max-width:200px;max-height:200px;display:block;margin:8px auto;border-radius:8px;cursor:zoom-in;">
+                <img src="${data.image}" alt="Sample" class="sample-image" style="max-width:200px;max-height:200px;display:block;margin:8px auto;border-radius:8px;cursor:zoom-in;"><br>
+                ${data.annotatedimageurl ? `<a href="${data.annotatedimageurl}" target="_blank">Annotated</a>` : ''}
             </div>
         `);
         

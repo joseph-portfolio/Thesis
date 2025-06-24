@@ -48,7 +48,8 @@ def filter_markers():
             "density": float(item['density']),
             # "type": item['polymerType'],
             "date": item['datetime'],
-            "image": item['imageURL']
+            "image": item['imageURL'],
+            "annotatedimageurl": item['annotatedImageURL']
         }
         for item in items
     ]
