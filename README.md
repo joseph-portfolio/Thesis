@@ -8,11 +8,10 @@ https://sagemaker.readthedocs.io/en/stable/frameworks/pytorch/using_pytorch.html
 ## Sample JSON for this endpoint
 
 ```json
-    {
-        "s3_image_url": "s3://rpi-upload-bucket/Dataset/train/1_jpg.rf.3bd160570ca04ce20d506e7d30bba9db.jpg",
-        "density": "3.14",
-        "sample_id": "3"
-    }
+{
+    "image_url": "https://rpi-upload-bucket.s3.ap-southeast-1.amazonaws.com/Dataset/samples/stage_1/image_20250622_175142.jpg",
+    "sample_id": "111"
+}
 ```
 
 # TODO
