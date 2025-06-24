@@ -45,7 +45,7 @@ def filter_markers():
         {
             "lat": float(item['latitude']),
             "lon": float(item['longitude']),
-            # "density": int(item['density']),
+            "density": int(item['density']),
             # "type": item['polymerType'],
             "date": item['datetime'],
             "image": item['imageURL']
