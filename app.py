@@ -45,7 +45,7 @@ def filter_markers():
         {
             "lat": float(item['latitude']),
             "lon": float(item['longitude']),
-            "density": int(item['density']),
+            "density": float(item['density']),
             # "type": item['polymerType'],
             "date": item['datetime'],
             "image": item['imageURL']
@@ -87,6 +87,28 @@ def get_total_samples():
     items = response.get('Items', [])
     total_samples = len(items)
     return jsonify({"total_samples": total_samples})
+
+@app.route('/average_density', methods=['POST'])
+def get_average_density():
+    data = request.get_json()
+    min_date = data['min_date']
+    max_date = data['max_date']
+
+    response = table.scan(
+        FilterExpression="#dt BETWEEN :min_date AND :max_date",
+        ExpressionAttributeNames={"#dt": "datetime"},
+        ExpressionAttributeValues={
+            ":min_date": min_date,
+            ":max_date": max_date
+        }
+    )
+    items = response.get('Items', [])
+    if not items:
+        return jsonify({"average_density": 0})
+    # Use float for density to support decimal values
+    total_density = sum(float(item['density']) for item in items if 'density' in item)
+    average_density = total_density / len(items)
+    return jsonify({"average_density": average_density})
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))  # Default to 5000 for local testing

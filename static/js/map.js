@@ -20,15 +20,50 @@ const zoomControl = L.control.zoom({
 });
 zoomControl.addTo(map);
 
-// Use Jawg Terrain tile layer
-// L.tileLayer('https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=BD2lZDhbcFkhEdIcvlN4uXNTuX5eb21icj9H78VAp4GEA27N0j8B96s6rTWjnNSx', {
-//     attribution: '<a href="https://www.jawg.io?utm_medium=map&utm_source=attribution" target="_blank">&copy; Jawg</a> - <a href="https://www.openstreetmap.org?utm_medium=map-attribution&utm_source=jawg" target="_blank">&copy; OpenStreetMap</a> contributors',
-// }).addTo(map);
-
-// Use Jawg Light tile layer
-L.tileLayer('https://tile.jawg.io/jawg-light/{z}/{x}/{y}{r}.png?access-token=BD2lZDhbcFkhEdIcvlN4uXNTuX5eb21icj9H78VAp4GEA27N0j8B96s6rTWjnNSx', {
+// Define Jawg Light and Jawg Terrain tile layers
+const jawgLight = L.tileLayer('https://tile.jawg.io/jawg-light/{z}/{x}/{y}{r}.png?access-token=BD2lZDhbcFkhEdIcvlN4uXNTuX5eb21icj9H78VAp4GEA27N0j8B96s6rTWjnNSx', {
     attribution: '<a href="https://www.jawg.io?utm_medium=map&utm_source=attribution" target="_blank">&copy; Jawg</a> - <a href="https://www.openstreetmap.org?utm_medium=map-attribution&utm_source=jawg" target="_blank">&copy; OpenStreetMap</a> contributors',
-}).addTo(map);
+    maxZoom: 22
+});
+const jawgTerrain = L.tileLayer('https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token=BD2lZDhbcFkhEdIcvlN4uXNTuX5eb21icj9H78VAp4GEA27N0j8B96s6rTWjnNSx', {
+    attribution: '<a href="https://www.jawg.io?utm_medium=map&utm_source=attribution" target="_blank">&copy; Jawg</a> - <a href="https://www.openstreetmap.org?utm_medium=map-attribution&utm_source=jawg" target="_blank">&copy; OpenStreetMap</a> contributors',
+    maxZoom: 22
+});
+
+// Add the default tile layer to the map
+jawgLight.addTo(map);
+
+// Custom toggle button for tile layers
+const TileToggleControl = L.Control.extend({
+    options: { position: 'bottomleft' },
+    onAdd: function(map) {
+        const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+        container.style.backgroundColor = 'white';
+        container.style.cursor = 'pointer';
+        container.style.padding = '4px 10px';
+        container.style.fontWeight = 'bold';
+        container.style.fontSize = '14px';
+        container.style.borderRadius = '4px';
+        container.style.boxShadow = '0 1px 5px rgba(0,0,0,0.3)';
+        container.innerHTML = 'Terrain'; // Show the next layer to switch to
+        let currentLayer = jawgLight;
+        let nextLayer = jawgTerrain;
+        container.onclick = function(e) {
+            e.stopPropagation();
+            if (map.hasLayer(currentLayer)) {
+                map.removeLayer(currentLayer);
+                nextLayer.addTo(map);
+                // Swap layers
+                const temp = currentLayer;
+                currentLayer = nextLayer;
+                nextLayer = temp;
+                container.innerHTML = (currentLayer === jawgLight) ? 'Terrain' : 'Light';
+            }
+        };
+        return container;
+    }
+});
+map.addControl(new TileToggleControl());
 
 let markers = [];
 
@@ -59,13 +94,13 @@ function getDensityColor(density) {
     
     // Define color stops for the gradient
     const colorStops = [
-        { value: 0.0, color: '#8a2be2' },  // Violet (lowest)
-        { value: 0.5, color: '#4b0082' },  // Indigo
-        { value: 1.0, color: '#0000ff' },  // Blue
-        { value: 2.0, color: '#00ff00' },  // Green
-        { value: 3.0, color: '#ffff00' },  // Yellow
-        { value: 4.0, color: '#ff8000' },  // Orange
-        { value: 5.0, color: '#ff0000' }   // Red (highest)
+        { value: 0.0,  color: '#8a2be2' },  // Violet (lowest)
+        { value: 0.025, color: '#4b0082' },  // Indigo
+        { value: 0.05,  color: '#0000ff' },  // Blue
+        { value: 0.075, color: '#00ff00' },  // Green
+        { value: 0.1,  color: '#ffff00' },  // Yellow
+        { value: 0.125, color: '#ff8000' },  // Orange
+        { value: 0.15,  color: '#ff0000' }   // Red (highest)
     ];
     
     // Cap the value at the highest color stop
@@ -136,6 +171,18 @@ function addMarkers(markerData) {
                 <img src="${data.image}" alt="Sample" class="sample-image" style="max-width:200px;max-height:200px;display:block;margin:8px auto;border-radius:8px;cursor:zoom-in;">
             </div>
         `);
+        
+        // Add click handler to marker for opening popup
+        marker.on('click', function() {
+            // Close any open popups before opening a new one
+            markers.forEach(m => {
+                if (m !== marker) {
+                    m.closePopup();
+                }
+            });
+            // Open the popup for the clicked marker
+            marker.getPopup().setLatLng(marker.getLatLng()).openOn(map);
+        });
         
         // Add click handler for image preview when popup opens
         function handlePopupOpen(e) {
@@ -325,10 +372,10 @@ $(function () {
                 }
             });
 
-            // Update total samples dynamically based on slider values
+            // Update total samples and average density dynamically based on slider values
             const minDate = formatDate(ui.values[0], false);
             const maxDate = formatDate(ui.values[1], true);
-            updateTotalSamples(minDate, maxDate);
+            updateSidebarStats(minDate, maxDate);
         }
     });
 
@@ -337,6 +384,11 @@ $(function () {
     $("#amount").text(
         formatDisplayDate(initialValues[0]) + " - " + formatDisplayDate(initialValues[1])
     );
+
+    // On initial load
+    const minDate = formatDate(initialValues[0], false);
+    const maxDate = formatDate(initialValues[1], true);
+    updateSidebarStats(minDate, maxDate);
 
     // Fetch initial markers
     fetch('/filter_markers', {
@@ -397,7 +449,36 @@ function updateTotalSamples(minDate, maxDate) {
     });
 }
 
-// Call updateLastUpdated and updateTotalSamples on page load
+// Fetch average density from DynamoDB with date range filter and update the sidebar
+function updateAverageDensity(minDate, maxDate) {
+    fetch('/average_density', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ min_date: minDate, max_date: maxDate })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const avgDensityElement = document.getElementById('sidebar-average-density');
+        if (data && typeof data.average_density === 'number') {
+            avgDensityElement.textContent = data.average_density.toFixed(2);
+        } else {
+            avgDensityElement.textContent = '0';
+        }
+    })
+    .catch(err => {
+        console.error('Error fetching average density:', err);
+        const avgDensityElement = document.getElementById('sidebar-average-density');
+        avgDensityElement.textContent = 'Error';
+    });
+}
+
+// Update both total samples and average density when slider changes or on load
+function updateSidebarStats(minDate, maxDate) {
+    updateTotalSamples(minDate, maxDate);
+    updateAverageDensity(minDate, maxDate);
+}
+
+// Call updateLastUpdated and updateSidebarStats on page load
 document.addEventListener('DOMContentLoaded', () => {
     updateLastUpdated();
     
@@ -414,6 +495,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const minDate = formatDate(values[0]);
         const maxDate = formatDate(values[1]);
-        updateTotalSamples(minDate, maxDate);
+        updateSidebarStats(minDate, maxDate);
     }
 });
