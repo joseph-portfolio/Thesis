@@ -1,6 +1,8 @@
 import os
 import boto3
 from flask import Flask, render_template, request, jsonify
+from collections import defaultdict
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -22,6 +24,10 @@ def index():
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+@app.route("/chart")
+def chart():
+    return render_template("chart.html")
 
 @app.route("/filter_markers", methods=["POST"])
 def filter_markers():
@@ -110,6 +116,30 @@ def get_average_density():
     total_density = sum(float(item['density']) for item in items if 'density' in item)
     average_density = total_density / len(items)
     return jsonify({"average_density": average_density})
+
+@app.route('/timeseries_data')
+def timeseries_data():
+    mode = request.args.get('mode', 'daily')
+    response = table.scan()
+    items = response.get('Items', [])
+    data = defaultdict(list)
+
+    for item in items:
+        dt = item['datetime'][:10]  # 'YYYY-MM-DD'
+        density = float(item['density'])
+        if mode == 'weekly':
+            # Find the Monday of the week
+            date_obj = datetime.strptime(dt, "%Y-%m-%d")
+            monday = date_obj - timedelta(days=date_obj.weekday())
+            dt = monday.strftime("%Y-%m-%d")
+        data[dt].append(density)
+
+    result = []
+    for date, densities in sorted(data.items()):
+        avg = sum(densities) / len(densities)
+        result.append({'date': date, 'average_density': avg})
+
+    return jsonify(result)
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))  # Default to 5000 for local testing

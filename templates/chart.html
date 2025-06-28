@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microplastic Density Analysis</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chart.css') }}">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="main-header">
+            <a href="/" style="text-decoration: none;">
+                <div class="logo-title">
+                    <div class="logo-box">
+                        <div class="microplastic"></div>
+                        <div class="microplastic"></div>
+                        <div class="microplastic"></div>
+                        <div class="propeller"></div>
+                    </div>
+                    <span class="main-title">Microplastic Mapping</span>
+                </div>
+            </a>
+            <nav class="main-nav">
+                <a href="/" class="nav-link">Map</a>
+                <a href="chart" class="nav-link active">Chart</a>
+                <a href="about" class="nav-link">About</a>
+            </nav>
+        </header>
+        
+        <div class="main-content">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">Microplastic Density Over Time</div>
+                    <div class="timeframe-tabs">
+                        <div class="timeframe-tab active" data-timeframe="daily">Daily</div>
+                        <div class="timeframe-tab" data-timeframe="weekly">Weekly</div>
+                    </div>
+                </div>
+                <div id="chart-wrapper">
+                    <div class="chart-loading" id="loading-indicator">
+                        <div class="spinner"></div>
+                    </div>
+                    <canvas id="densityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Application JavaScript -->
+    <script src="{{ url_for('static', filename='js/chart.js') }}"></script>
+</body>
+</html>
