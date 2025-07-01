@@ -301,27 +301,14 @@ function addMarkers(markerData) {
 
 let currentFetchController = null;
 
-// Debounce function to limit how often a function can be called
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Debounced function to fetch markers
-const debouncedFetchMarkers = debounce((minDate, maxDate) => {
+// Function to fetch markers with current controller
+function fetchMarkers(minDate, maxDate) {
     if (currentFetchController) {
         currentFetchController.abort();
     }
     currentFetchController = new AbortController();
 
-    fetch('/filter_markers', {
+    return fetch('/filter_markers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ min_date: minDate, max_date: maxDate }),
@@ -330,18 +317,9 @@ const debouncedFetchMarkers = debounce((minDate, maxDate) => {
     .then(response => response.json())
     .then(data => {
         addMarkers(data);
-    })
-    .catch(err => {
-        if (err.name !== 'AbortError') {
-            console.error(err);
-        }
+        return data;
     });
-}, 300); // 300ms delay
-
-// Debounced function to update sidebar stats
-const debouncedUpdateSidebar = debounce((minDate, maxDate) => {
-    updateSidebarStats(minDate, maxDate);
-}, 300);
+}
 
 // Initialize slider
 $(function () {
@@ -385,17 +363,40 @@ $(function () {
             if (ui.values[1] > maxSliderTimestamp) {
                 ui.values[1] = maxSliderTimestamp;
             }
+            // Only update the displayed date range during slide
             $("#amount").text(
                 formatDisplayDate(ui.values[0]) + " - " + formatDisplayDate(ui.values[1])
             );
-
-            // Prepare dates for the debounced calls
+        },
+        stop: function(event, ui) {
+            // Only fetch data when user stops dragging
             const minDate = formatDate(ui.values[0], false);
             const maxDate = formatDate(ui.values[1], true);
             
-            // Trigger debounced updates
-            debouncedFetchMarkers(minDate, maxDate);
-            debouncedUpdateSidebar(minDate, maxDate);
+            // Update markers and sidebar immediately after slider stops
+            if (currentFetchController) {
+                currentFetchController.abort();
+            }
+            currentFetchController = new AbortController();
+
+            // Fetch markers
+            fetch('/filter_markers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ min_date: minDate, max_date: maxDate }),
+                signal: currentFetchController.signal
+            })
+            .then(response => response.json())
+            .then(data => {
+                addMarkers(data);
+                // Update sidebar after markers are loaded
+                updateSidebarStats(minDate, maxDate);
+            })
+            .catch(err => {
+                if (err.name !== 'AbortError') {
+                    console.error(err);
+                }
+            });
         }
     });
 
