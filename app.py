@@ -82,19 +82,36 @@ def filter_markers():
 
     return jsonify(marker_data)
 
-@app.route('/latest_date', methods=['GET'])
-def get_latest_date():
+@app.route('/date_range', methods=['GET'])
+def get_date_range():
     response = table.scan(
         ProjectionExpression="#dt",
         ExpressionAttributeNames={"#dt": "datetime"}
     )
     items = response.get('Items', [])
     if not items:
-        return jsonify({"latest_date": None})
+        return jsonify({"min_date": None, "max_date": None})
 
-    # Ensure 'datetime' is present in the items
-    latest_date = max(item.get('datetime') for item in items if 'datetime' in item)
-    return jsonify({"latest_date": latest_date})
+    # Filter out items without datetime and convert to datetime objects
+    datetimes = []
+    for item in items:
+        if 'datetime' in item:
+            try:
+                dt = datetime.strptime(item['datetime'], '%Y-%m-%d %H:%M:%S')
+                datetimes.append(dt)
+            except (ValueError, TypeError):
+                continue
+    
+    if not datetimes:
+        return jsonify({"min_date": None, "max_date": None})
+        
+    min_date = min(datetimes).strftime('%Y-%m-%d %H:%M:%S')
+    max_date = max(datetimes).strftime('%Y-%m-%d %H:%M:%S')
+    
+    return jsonify({
+        "min_date": min_date,
+        "max_date": max_date
+    })
 
 @app.route('/total_samples', methods=['POST'])
 def get_total_samples():

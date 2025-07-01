@@ -321,7 +321,74 @@ function fetchMarkers(minDate, maxDate) {
     });
 }
 
-// Initialize slider
+// Function to initialize the slider with dynamic date range
+function initializeSlider(minDate, maxDate) {
+    // Helper to pad numbers to two digits
+    const pad = n => n < 10 ? '0' + n : n;
+
+    // Format date as YYYY-MM-DD HH:MM:SS in UTC+8, with option for end of day
+    const formatDate = (timestamp, isMax = false) => {
+        const date = new Date((timestamp + 8 * 3600) * 1000); // shift to UTC+8
+        const time = isMax ? '23:59:59' : '00:00:00';
+        return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ${time}`;
+    };
+
+    // Format date as YYYY-MM-DD in UTC+8 for display
+    const formatDisplayDate = timestamp => {
+        const date = new Date((timestamp + 8 * 3600) * 1000);
+        return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+    };
+
+    // Convert date strings to timestamps
+    const minTimestamp = Math.floor(new Date(minDate).getTime() / 1000);
+    const maxTimestamp = Math.floor(new Date(maxDate).getTime() / 1000);
+
+    // Initialize the slider with the date range
+    $("#slider-range").slider({
+        range: true,
+        min: minTimestamp,
+        max: maxTimestamp,
+        step: 86400, // One day
+        values: [minTimestamp, maxTimestamp],
+        slide: function (event, ui) {
+            // Clamp right handle to max timestamp
+            if (ui.values[1] > maxTimestamp) {
+                ui.values[1] = maxTimestamp;
+            }
+            // Only update the displayed date range during slide
+            $("#amount").text(
+                formatDisplayDate(ui.values[0]) + " - " + formatDisplayDate(ui.values[1])
+            );
+        },
+        stop: function(event, ui) {
+            // Only fetch data when user stops dragging
+            const minDate = formatDate(ui.values[0], false);
+            const maxDate = formatDate(ui.values[1], true);
+            
+            // Update markers and sidebar immediately after slider stops
+            fetchMarkers(minDate, maxDate).then(() => {
+                updateSidebarStats(minDate, maxDate);
+            });
+        }
+    });
+
+    // Set initial label
+    const initialValues = $("#slider-range").slider("values");
+    $("#amount").text(
+        formatDisplayDate(initialValues[0]) + " - " + formatDisplayDate(initialValues[1])
+    );
+
+    // On initial load
+    const initialMinDate = formatDate(initialValues[0], false);
+    const initialMaxDate = formatDate(initialValues[1], true);
+    
+    // Fetch initial markers and update sidebar
+    fetchMarkers(initialMinDate, initialMaxDate).then(() => {
+        updateSidebarStats(initialMinDate, initialMaxDate);
+    });
+}
+
+// Initialize the application
 $(function () {
     // Helper to pad numbers to two digits
     const pad = n => n < 10 ? '0' + n : n;
@@ -339,91 +406,28 @@ $(function () {
         return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
     };
 
-    // Get today's midnight in UTC+8 as the slider's max value
-    const now = new Date();
-    const utc8Midnight = new Date(now.getTime() + 8 * 3600 * 1000);
-    utc8Midnight.setUTCHours(0, 0, 0, 0);
-    const maxSliderTimestamp = Math.floor(utc8Midnight.getTime() / 1000) - 8 * 3600;
-
-    // Get April 1, 2025 midnight in UTC+8 as the slider's min value
-    const startSliderTimestamp = Math.floor(new Date('2025-04-01T00:00:00+08:00').getTime() / 1000);
-
-    // Initialize the slider
-    $("#slider-range").slider({
-        range: true,
-        min: startSliderTimestamp,
-        max: maxSliderTimestamp,
-        step: 86400, // One day
-        values: [
-            startSliderTimestamp,
-            maxSliderTimestamp
-        ],
-        slide: function (event, ui) {
-            // Clamp right handle to maxSliderTimestamp
-            if (ui.values[1] > maxSliderTimestamp) {
-                ui.values[1] = maxSliderTimestamp;
+    // Fetch the date range from the server and initialize the slider
+    fetch('/date_range')
+        .then(response => response.json())
+        .then(data => {
+            if (data.min_date && data.max_date) {
+                initializeSlider(data.min_date, data.max_date);
+            } else {
+                // Fallback to default dates if no data is available
+                const defaultMinDate = '2025-04-01T00:00:00+08:00';
+                const defaultMaxDate = new Date();
+                defaultMaxDate.setUTCHours(0, 0, 0, 0);
+                initializeSlider(defaultMinDate, defaultMaxDate.toISOString());
             }
-            // Only update the displayed date range during slide
-            $("#amount").text(
-                formatDisplayDate(ui.values[0]) + " - " + formatDisplayDate(ui.values[1])
-            );
-        },
-        stop: function(event, ui) {
-            // Only fetch data when user stops dragging
-            const minDate = formatDate(ui.values[0], false);
-            const maxDate = formatDate(ui.values[1], true);
-            
-            // Update markers and sidebar immediately after slider stops
-            if (currentFetchController) {
-                currentFetchController.abort();
-            }
-            currentFetchController = new AbortController();
-
-            // Fetch markers
-            fetch('/filter_markers', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ min_date: minDate, max_date: maxDate }),
-                signal: currentFetchController.signal
-            })
-            .then(response => response.json())
-            .then(data => {
-                addMarkers(data);
-                // Update sidebar after markers are loaded
-                updateSidebarStats(minDate, maxDate);
-            })
-            .catch(err => {
-                if (err.name !== 'AbortError') {
-                    console.error(err);
-                }
-            });
-        }
-    });
-
-    // Set initial label
-    const initialValues = $("#slider-range").slider("values");
-    $("#amount").text(
-        formatDisplayDate(initialValues[0]) + " - " + formatDisplayDate(initialValues[1])
-    );
-
-    // On initial load
-    const minDate = formatDate(initialValues[0], false);
-    const maxDate = formatDate(initialValues[1], true);
-    updateSidebarStats(minDate, maxDate);
-
-    // Fetch initial markers
-    fetch('/filter_markers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            min_date: formatDate(initialValues[0], false),
-            max_date: formatDate(initialValues[1], true)
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        addMarkers(data);
-    });
+        .catch(error => {
+            console.error('Error fetching date range:', error);
+            // Fallback to default dates on error
+            const defaultMinDate = '2025-04-01T00:00:00+08:00';
+            const defaultMaxDate = new Date();
+            defaultMaxDate.setUTCHours(0, 0, 0, 0);
+            initializeSlider(defaultMinDate, defaultMaxDate.toISOString());
+        });
 });
 
 // Function to update the "Last Updated" section dynamically
