@@ -1,4 +1,16 @@
 /* Chart Container */
+/* Chart Instruction */
+.chart-instruction {
+    text-align: center;
+    margin: 0 0 15px 0;
+    color: #6b7280;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 4px;
+}
+
 .chart-container {
     background: #fff;
     border-radius: 8px;
@@ -12,6 +24,16 @@
     flex-direction: column;
     overflow: hidden;
     box-sizing: border-box;
+    position: relative;
+}
+
+/* Custom cursor for chart */
+#densityChart {
+    cursor: default;
+}
+
+#densityChart:hover {
+    cursor: crosshair;
 }
 
 /* Chart Header */

@@ -3,8 +3,28 @@ import boto3
 from flask import Flask, render_template, request, jsonify
 from collections import defaultdict
 from datetime import datetime, timedelta
+from functools import wraps
 
 app = Flask(__name__)
+
+def datetimeformat(value, format='%Y-%m-%d'):
+    if isinstance(value, str):
+        try:
+            # Try parsing as YYYY-MM-DD
+            dt = datetime.strptime(value, '%Y-%m-%d')
+        except ValueError:
+            return value
+    elif isinstance(value, datetime):
+        dt = value
+    else:
+        return value
+    
+    # Replace format placeholders with strftime directives
+    format = format.replace('%-d', '%d').replace('%-m', '%m')
+    return dt.strftime(format)
+
+# Register the filter with Jinja2
+app.jinja_env.filters['datetimeformat'] = datetimeformat
 
 dynamodb = boto3.resource(
     'dynamodb',
@@ -137,9 +157,92 @@ def timeseries_data():
     result = []
     for date, densities in sorted(data.items()):
         avg = sum(densities) / len(densities)
-        result.append({'date': date, 'average_density': avg})
+        result.append({'date': date, 'average_density': avg, 'sample_count': len(densities)})
 
     return jsonify(result)
+
+def format_date_display(start_date, end_date=None):
+    """Format date or date range for display."""
+    def format_single_date(date):
+        day = str(date.day).lstrip('0')
+        return f"{date.strftime('%B')} {day}, {date.year}"
+    
+    if not end_date or start_date == end_date:
+        return format_single_date(start_date)
+    
+    start_day = str(start_date.day).lstrip('0')
+    end_day = str(end_date.day).lstrip('0')
+    
+    if start_date.month == end_date.month and start_date.year == end_date.year:
+        return f"{start_date.strftime('%B')} {start_day}-{end_day}, {start_date.year}"
+    
+    start_str = f"{start_date.strftime('%B')} {start_day}"
+    end_str = f"{end_date.strftime('%B')} {end_day}, {end_date.year}"
+    return f"{start_str} - {end_str}"
+
+def filter_items_by_date_range(items, start_date, end_date):
+    """Filter items that fall within the specified date range (inclusive)."""
+    filtered = []
+    for item in items:
+        item_date = datetime.strptime(item['datetime'][:10], "%Y-%m-%d")
+        if start_date <= item_date <= end_date:
+            filtered.append(item)
+    return filtered
+
+@app.route('/detailed_data')
+def detailed_data():
+    # Get and validate parameters
+    date_str = request.args.get('date')
+    mode = request.args.get('mode', 'daily')
+    
+    if not date_str:
+        return jsonify({'error': 'Date parameter is required'}), 400
+    
+    try:
+        # Parse and validate date
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+    except ValueError:
+        return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
+    
+    # Determine date range based on mode
+    if mode == 'weekly':
+        end_date = date_obj + timedelta(days=6)  # End of the week
+        date_display = format_date_display(date_obj, end_date)
+    else:  # daily
+        end_date = date_obj
+        date_display = format_date_display(date_obj)
+    
+    # Fetch and filter data
+    try:
+        response = table.scan()
+        items = response.get('Items', [])
+        filtered_items = filter_items_by_date_range(items, date_obj, end_date)
+        
+        # Calculate statistics
+        sample_count = len(filtered_items)
+        densities = [float(item['density']) for item in filtered_items]
+        avg_density = sum(densities) / len(densities) if densities else 0
+        
+        # Prepare response data
+        samples = [{
+            'datetime': item['datetime'],
+            'density': float(item['density']),
+            'latitude': float(item['latitude']),
+            'longitude': float(item['longitude']),
+            'annotated_image_url': item.get('annotatedImageURL', '')  # Get the URL or empty string if not available
+        } for item in filtered_items]
+        
+        return render_template('detailed_data.html', data={
+            'date': date_display,
+            'mode': mode,
+            'samples': samples,
+            'average_density': avg_density,
+            'sample_count': sample_count
+        })
+        
+    except Exception as e:
+        app.logger.error(f"Error processing request: {str(e)}")
+        return jsonify({'error': 'An error occurred while processing your request'}), 500
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))  # Default to 5000 for local testing

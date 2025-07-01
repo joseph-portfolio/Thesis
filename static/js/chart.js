@@ -52,6 +52,12 @@ async function fetchData(timeframe) {
     }
 }
 
+// Open detailed data for a specific date
+function openDetailedData(date, mode) {
+    const url = `/detailed_data?date=${date}&mode=${mode}`;
+    window.location.href = url;
+}
+
 // Initialize and render chart
 async function renderChart() {
     const data = await fetchData(currentTimeframe);
@@ -60,6 +66,7 @@ async function renderChart() {
     const ctx = document.getElementById('densityChart').getContext('2d');
     const labels = data.map(d => formatDate(d.date, currentTimeframe));
     const densities = data.map(d => d.average_density);
+    const dates = data.map(d => d.date); // Store original dates for click handling
     
     // Destroy previous chart instance if exists
     if (chart) chart.destroy();
@@ -77,15 +84,16 @@ async function renderChart() {
                 borderWidth: 2,
                 tension: 0.3,
                 pointRadius: 3,
-                pointHoverRadius: 5,
+                pointHoverRadius: 6,
                 pointBackgroundColor: '#fff',
                 pointBorderColor: '#3b82f6',
-                pointHoverBackgroundColor: '#3b82f6',
+                pointHoverBackgroundColor: '#2563eb',
                 pointHoverBorderColor: '#fff',
-                fill: true,
-                pointHitRadius: 10,
+                pointHoverBorderWidth: 2,
+                pointHitRadius: 20,
                 pointBorderWidth: 1.5,
-                spanGaps: true
+                spanGaps: true,
+                cursor: 'pointer'
             }]
         },
         options: {
@@ -168,6 +176,46 @@ async function renderChart() {
                 mode: 'nearest',
                 axis: 'x',
                 intersect: false
+            },
+            onHover: (event, chartElements) => {
+                const target = event.native?.target;
+                if (target) {
+                    const points = chart.getElementsAtEventForMode(
+                        event,
+                        'nearest',
+                        { intersect: false, axis: 'x' },
+                        false
+                    );
+                    target.style.cursor = points.length > 0 ? 'pointer' : 'default';
+                }
+            },
+            onClick: (e) => {
+                const points = chart.getElementsAtEventForMode(
+                    e,
+                    'nearest',
+                    { intersect: false, axis: 'x' },
+                    false
+                );
+                
+                if (points.length > 0) {
+                    const point = points[0];
+                    const date = dates[point.index];
+                    
+                    if (date) {
+                        // Visual feedback
+                        const activePoint = chart.getDatasetMeta(0).data[point.index];
+                        const originalRadius = activePoint.options.radius;
+                        activePoint.options.radius = 8;
+                        chart.update();
+                        
+                        // Reset and navigate
+                        setTimeout(() => {
+                            activePoint.options.radius = originalRadius;
+                            chart.update();
+                            openDetailedData(date, currentTimeframe);
+                        }, 150);
+                    }
+                }
             }
         }
     });

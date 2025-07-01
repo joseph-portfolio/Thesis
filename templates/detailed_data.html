@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed Data - {{ data.date }}</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/detailed_data.css') }}">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+</head>
+<body>
+    <div class="app-shell">
+        <header class="main-header">
+            <a href="/" style="text-decoration: none;">
+                <div class="logo-title">
+                    <div class="logo-box">
+                        <div class="microplastic"></div>
+                        <div class="microplastic"></div>
+                        <div class="microplastic"></div>
+                        <div class="propeller"></div>
+                    </div>
+                    <span class="main-title">Microplastic Mapping</span>
+                </div>
+            </a>
+            <nav class="main-nav">
+                <a href="/" class="nav-link">Map</a>
+                <a href="chart" class="nav-link">Chart</a>
+                <a href="about" class="nav-link">About</a>
+            </nav>
+        </header>
+        
+        <div class="main-content detailed-content">
+            <div class="detailed-container">
+                <div class="detailed-header">
+                    <h1>{{ data.date }}</h1>
+                    <div class="summary">
+                        <div class="summary-item">
+                            <span class="summary-label">Average Density:</span>
+                            <span class="summary-value">{{ "%.2f"|format(data.average_density) }} pcs/cm³</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Number of Samples:</span>
+                            <span class="summary-value">{{ data.sample_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Density (pcs/cm³)</th>
+                                <th>Location</th>
+                                <th>Annotated Image</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sample in data.samples %}
+                            <tr>
+                                <td>{{ sample.datetime }}</td>
+                                <td>{{ "%.2f"|format(sample.density) }}</td>
+                                <td>
+                                    <a href="https://www.google.com/maps?q={{ sample.latitude }},{{ sample.longitude }}" target="_blank">
+                                        {{ "%.4f"|format(sample.latitude) }}, {{ "%.4f"|format(sample.longitude) }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if sample.annotated_image_url and sample.annotated_image_url.strip() %}
+                                        <a href="{{ sample.annotated_image_url }}" target="_blank" class="image-link">View Image</a>
+                                    {% else %}
+                                        <span class="no-image">No Annotated Image Available</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="back-button">
+                    <a href="{{ url_for('chart') }}" class="back-link">Back to Chart</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
