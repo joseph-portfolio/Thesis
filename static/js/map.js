@@ -300,6 +300,7 @@ function addMarkers(markerData) {
 }
 
 let currentFetchController = null;
+let latestMaxDate = null; // Store the latest max date globally
 
 // Function to fetch markers with current controller
 function fetchMarkers(minDate, maxDate) {
@@ -406,19 +407,26 @@ $(function () {
         return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
     };
 
-    // Fetch the date range from the server and initialize the slider
-    fetch('/date_range')
-        .then(response => response.json())
+    // Function to fetch date range and store the max date
+    function fetchDateRange() {
+        return fetch('/date_range')
+            .then(response => response.json())
+            .then(data => {
+                if (data.min_date && data.max_date) {
+                    // Store the max date for the "Last Updated" section
+                    latestMaxDate = data.max_date;
+                    return data;
+                }
+                throw new Error('Invalid date range data');
+            });
+    }
+
+    // Fetch the date range from the server, initialize the slider, and update the last updated display
+    fetchDateRange()
         .then(data => {
-            if (data.min_date && data.max_date) {
-                initializeSlider(data.min_date, data.max_date);
-            } else {
-                // Fallback to default dates if no data is available
-                const defaultMinDate = '2025-04-01T00:00:00+08:00';
-                const defaultMaxDate = new Date();
-                defaultMaxDate.setUTCHours(0, 0, 0, 0);
-                initializeSlider(defaultMinDate, defaultMaxDate.toISOString());
-            }
+            initializeSlider(data.min_date, data.max_date);
+            // Update the last updated display with the stored max date
+            updateLastUpdated();
         })
         .catch(error => {
             console.error('Error fetching date range:', error);
@@ -426,29 +434,35 @@ $(function () {
             const defaultMinDate = '2025-04-01T00:00:00+08:00';
             const defaultMaxDate = new Date();
             defaultMaxDate.setUTCHours(0, 0, 0, 0);
-            initializeSlider(defaultMinDate, defaultMaxDate.toISOString());
+            latestMaxDate = defaultMaxDate.toISOString().replace('T', ' ').split('.')[0];
+            initializeSlider(defaultMinDate, latestMaxDate);
+            updateLastUpdated();
         });
 });
 
-// Function to update the "Last Updated" section dynamically
+// Function to update the "Last Updated" section using the stored max date
 function updateLastUpdated() {
-    fetch('/latest_date')
-        .then(response => response.json())
-        .then(data => {
-            const lastUpdatedElement = document.getElementById('last-updated');
-            if (data && data.latest_date) {
-                // Extract only the date part (YYYY-MM-DD)
-                const dateOnly = data.latest_date.split(' ')[0];
-                lastUpdatedElement.textContent = `Last Updated: ${dateOnly}`;
-            } else {
-                lastUpdatedElement.textContent = 'Last Updated: Data unavailable';
-            }
-        })
-        .catch(err => {
-            console.error('Error fetching latest date:', err);
-            const lastUpdatedElement = document.getElementById('last-updated');
-            lastUpdatedElement.textContent = 'Last Updated: Error fetching data';
-        });
+    const lastUpdatedElement = document.getElementById('last-updated');
+    if (latestMaxDate) {
+        // Extract only the date part (YYYY-MM-DD)
+        const dateOnly = latestMaxDate.split(' ')[0];
+        lastUpdatedElement.textContent = `Last Updated: ${dateOnly}`;
+    } else {
+        // If we don't have the max date yet, fetch it
+        fetchDateRange()
+            .then(() => {
+                if (latestMaxDate) {
+                    const dateOnly = latestMaxDate.split(' ')[0];
+                    lastUpdatedElement.textContent = `Last Updated: ${dateOnly}`;
+                } else {
+                    lastUpdatedElement.textContent = 'Last Updated: Data unavailable';
+                }
+            })
+            .catch(err => {
+                console.error('Error fetching date range:', err);
+                lastUpdatedElement.textContent = 'Last Updated: Error fetching data';
+            });
+    }
 }
 
 // Fetch total samples from DynamoDB with date range filter and update the sidebar
