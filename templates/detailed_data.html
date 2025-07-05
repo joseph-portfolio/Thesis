@@ -62,7 +62,7 @@
                             {% for sample in data.samples %}
                             <tr>
                                 <td>{{ sample.datetime }}</td>
-                                <td>{{ "%.2f"|format(sample.density) }}</td>
+                                <td>{{ sample.density }}</td>
                                 <td>
                                     <a href="https://www.google.com/maps?q={{ sample.latitude }},{{ sample.longitude }}" target="_blank">
                                         {{ "%.6f"|format(sample.latitude) }}, {{ "%.6f"|format(sample.longitude) }}
