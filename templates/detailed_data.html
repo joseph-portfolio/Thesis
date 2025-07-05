@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/detailed_data.css') }}">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+    
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/detailed_data.js') }}"></script>
 </head>
 <body>
     <div class="app-shell">
@@ -52,8 +55,28 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Date & Time</th>
-                                <th>Density (pcs/cm³)</th>
+                                <th class="sortable" data-sort-by="datetime">
+                                    Date & Time
+                                    <span class="sort-indicator">
+                                        <svg class="sort-asc" width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 5L19 12M12 5L5 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg class="sort-desc" width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 19L5 12M12 19L19 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </span>
+                                </th>
+                                <th class="sortable" data-sort-by="density">
+                                    Density (pcs/cm³)
+                                    <span class="sort-indicator">
+                                        <svg class="sort-asc" width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 5L19 12M12 5L5 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg class="sort-desc" width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 19L5 12M12 19L19 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </span>
+                                </th>
                                 <th>Location</th>
                                 <th>Annotated Image</th>
                             </tr>
@@ -148,5 +171,7 @@
             </div>
         </div>
     </div>
+    <!-- Load JavaScript at the end of body -->
+    <script src="{{ url_for('static', filename='js/detailed_data.js') }}"></script>
 </body>
 </html>

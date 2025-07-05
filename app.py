@@ -211,7 +211,9 @@ def detailed_data():
     date_str = request.args.get('date')
     mode = request.args.get('mode', 'daily')
     page = request.args.get('page', 1, type=int)
-    per_page = 15 # Number of samples per page
+    per_page = 15  # Number of samples per page
+    sort_by = request.args.get('sort_by', 'datetime')
+    sort_order = request.args.get('sort_order', 'desc')
     
     if not date_str:
         return jsonify({'error': 'Date parameter is required'}), 400
@@ -235,6 +237,22 @@ def detailed_data():
         response = table.scan()
         items = response.get('Items', [])
         filtered_items = filter_items_by_date_range(items, date_obj, end_date)
+        
+        # Define sort key functions
+        def get_sort_key(item, field):
+            value = item.get(field, '')
+            try:
+                return float(value)
+            except (ValueError, TypeError):
+                return str(value).lower()
+        
+        # Sort items based on sort parameters
+        if sort_by and sort_by in ['datetime', 'density', 'latitude', 'longitude']:
+            reverse_sort = (sort_order == 'desc')
+            filtered_items.sort(
+                key=lambda x: get_sort_key(x, sort_by),
+                reverse=reverse_sort
+            )
         
         # Calculate statistics using all items
         sample_count = len(filtered_items)
