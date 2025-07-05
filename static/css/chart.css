@@ -1,16 +1,3 @@
-/* Chart Container */
-/* Chart Instruction */
-.chart-instruction {
-    text-align: center;
-    margin: 0 0 15px 0;
-    color: #6b7280;
-    font-size: 16px;
-    font-weight: bold;
-    padding: 12px;
-    background: #f8fafc;
-    border-radius: 4px;
-}
-
 .chart-container {
     background: #fff;
     border-radius: 8px;
@@ -27,6 +14,17 @@
     position: relative;
 }
 
+.chart-instruction {
+    text-align: center;
+    margin: 0 0 15px 0;
+    color: #6b7280;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 4px;
+}
+
 /* Custom cursor for chart */
 #densityChart {
     cursor: default;
@@ -36,7 +34,6 @@
     cursor: crosshair;
 }
 
-/* Chart Header */
 .chart-header {
     display: flex;
     justify-content: space-between;
@@ -73,7 +70,6 @@
     transform-origin: left;
 }
 
-/* Timeframe Tabs */
 .timeframe-tabs {
     display: flex;
     background: #f3f4f6;
@@ -102,8 +98,7 @@
 .timeframe-tab:not(.active):hover {
     color: #1f2937;
 }
-
-/* Main Content */
+    
 .main-content {
     flex: 1;
     position: relative;
@@ -115,7 +110,6 @@
     flex-direction: column;
 }
 
-/* Chart Wrapper */
 #chart-wrapper {
     flex: 1;
     position: relative;
@@ -131,7 +125,6 @@
     flex-direction: column;
 }
 
-/* Loading Indicator */
 .chart-loading {
     position: absolute;
     top: 0;
@@ -159,7 +152,6 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Chart Canvas */
 canvas#densityChart {
     flex: 1;
     width: 100% !important;

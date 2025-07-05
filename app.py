@@ -3,7 +3,6 @@ import boto3
 from flask import Flask, render_template, request, jsonify
 from collections import defaultdict
 from datetime import datetime, timedelta
-from functools import wraps
 
 app = Flask(__name__)
 
@@ -211,6 +210,8 @@ def detailed_data():
     # Get and validate parameters
     date_str = request.args.get('date')
     mode = request.args.get('mode', 'daily')
+    page = request.args.get('page', 1, type=int)
+    per_page = 15 # Number of samples per page
     
     if not date_str:
         return jsonify({'error': 'Date parameter is required'}), 400
@@ -235,26 +236,43 @@ def detailed_data():
         items = response.get('Items', [])
         filtered_items = filter_items_by_date_range(items, date_obj, end_date)
         
-        # Calculate statistics
+        # Calculate statistics using all items
         sample_count = len(filtered_items)
         densities = [float(item['density']) for item in filtered_items]
         avg_density = sum(densities) / len(densities) if densities else 0
         
-        # Prepare response data
+        # Pagination
+        total_pages = (sample_count + per_page - 1) // per_page
+        page = max(1, min(page, total_pages))  # Ensure page is within valid range
+        start_idx = (page - 1) * per_page
+        end_idx = start_idx + per_page
+        paginated_items = filtered_items[start_idx:end_idx]
+        
+        # Prepare response data for the current page
         samples = [{
             'datetime': item['datetime'],
             'density': float(item['density']),
             'latitude': float(item['latitude']),
             'longitude': float(item['longitude']),
             'annotated_image_url': item.get('annotatedImageURL', '')  # Get the URL or empty string if not available
-        } for item in filtered_items]
+        } for item in paginated_items]
         
         return render_template('detailed_data.html', data={
             'date': date_display,
             'mode': mode,
             'samples': samples,
             'average_density': avg_density,
-            'sample_count': sample_count
+            'sample_count': sample_count,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total_pages': total_pages,
+                'total_items': sample_count,
+                'has_prev': page > 1,
+                'has_next': page < total_pages,
+                'prev_num': page - 1 if page > 1 else None,
+                'next_num': page + 1 if page < total_pages else None
+            }
         })
         
     except Exception as e:

@@ -81,6 +81,67 @@
                     </table>
                 </div>
                 
+                {% if data.pagination.total_pages > 1 %}
+                <div class="pagination-container">
+                    <div class="pagination">
+                        {% if data.pagination.has_prev %}
+                            <a href="{{ url_for('detailed_data', date=request.args.get('date'), mode=request.args.get('mode', 'daily'), page=data.pagination.prev_num) }}" class="pagination-arrow" title="Previous">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        {% else %}
+                            <span class="pagination-arrow disabled" title="Previous">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                        {% endif %}
+                        
+                        {% set max_visible_pages = 5 %}
+                        {% set half_window = max_visible_pages // 2 %}
+                        {% set start_page = [1, data.pagination.page - half_window]|max %}
+                        {% set end_page = [data.pagination.total_pages, start_page + max_visible_pages - 1]|min %}
+                        
+                        {% if start_page > 1 %}
+                            <a href="{{ url_for('detailed_data', date=request.args.get('date'), mode=request.args.get('mode', 'daily'), page=1) }}" class="pagination-number">1</a>
+                            {% if start_page > 2 %}
+                                <span class="pagination-ellipsis">...</span>
+                            {% endif %}
+                        {% endif %}
+                        
+                        {% for page_num in range(start_page, end_page + 1) %}
+                            {% if page_num == data.pagination.page %}
+                                <span class="pagination-number active">{{ page_num }}</span>
+                            {% else %}
+                                <a href="{{ url_for('detailed_data', date=request.args.get('date'), mode=request.args.get('mode', 'daily'), page=page_num) }}" class="pagination-number">{{ page_num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if end_page < data.pagination.total_pages %}
+                            {% if end_page < data.pagination.total_pages - 1 %}
+                                <span class="pagination-ellipsis">...</span>
+                            {% endif %}
+                            <a href="{{ url_for('detailed_data', date=request.args.get('date'), mode=request.args.get('mode', 'daily'), page=data.pagination.total_pages) }}" class="pagination-number">{{ data.pagination.total_pages }}</a>
+                        {% endif %}
+                        
+                        {% if data.pagination.has_next %}
+                            <a href="{{ url_for('detailed_data', date=request.args.get('date'), mode=request.args.get('mode', 'daily'), page=data.pagination.next_num) }}" class="pagination-arrow" title="Next">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        {% else %}
+                            <span class="pagination-arrow disabled" title="Next">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
                 <div class="back-button">
                     <a href="{{ url_for('chart') }}" class="back-link">Back to Chart</a>
                 </div>

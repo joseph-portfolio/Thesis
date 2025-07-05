@@ -17,13 +17,11 @@ body {
   height: 100%;
 }
 
-/* Target Leaflet's container directly */
 .leaflet-container {
   height: calc(100vh - 64px) !important;
   width: 100% !important;
 }
 
-/* Ensure no margins or padding create gaps */
 * {
   margin: 0;
   padding: 0;
@@ -86,10 +84,6 @@ body {
   bottom: 0 !important;
 }
 
-/* Modern Minimal Floating Slider */
-
-/* Removed unused slider-modern styles */
-
 .slider-label {
   text-align: center;
   margin-top: 8px;
@@ -148,7 +142,6 @@ body {
   justify-content: center;
 }
 
-/* Base shape - water surface vehicle */
 .logo-box::before {
   content: '';
   position: absolute;
@@ -159,7 +152,6 @@ body {
   border-radius: 2px 2px 8px 8px;
 }
 
-/* Microscope container */
 .logo-box::after {
   content: '';
   position: absolute;
@@ -172,7 +164,6 @@ body {
   border-radius: 4px;
 }
 
-/* Microplastic particles */
 .logo-box .microplastic {
   position: absolute;
   width: 4px;
@@ -248,8 +239,6 @@ body {
   align-items: flex-start;
 }
 
-/* Removed duplicate map-card styles */
-
 .map-area {
   position: relative;
   width: 100vw;
@@ -278,10 +267,6 @@ body {
   z-index: 1;
 }
 
-
-/* Removed duplicate styles */
-
-/* Removed duplicate #map styles */
 .sidebar.overlay {
   position: absolute;
   top: 28px;
@@ -341,7 +326,6 @@ body {
   opacity: 1;
   text-decoration: underline;
 }
-/* Removed duplicate #map styles */
 
 /* === Slider Footer === */
 .slider-overlay {
@@ -411,7 +395,6 @@ body {
   z-index: 1;
 }
 
-/* Create our own custom slider track */
 #slider-range {
   position: absolute;
   top: 0;
@@ -424,7 +407,6 @@ body {
   z-index: 2;
 }
 
-/* Style the blue range */
 .ui-slider-range {
   position: absolute !important;
   height: 8px !important;
@@ -610,10 +592,6 @@ body {
   font-weight: 700;
   color: #111;
 }
-
-
-/* Consolidated into main responsive section below */
-
 
 /* === Popup Styles === */
 .popup-content-large {
