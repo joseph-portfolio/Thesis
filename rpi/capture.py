@@ -143,6 +143,7 @@ def capture_image_and_upload():
 
     finally:
         picam2.stop()
+        picam2.close()
 
 @app.route('/capture', methods=['POST'])
 def capture_image_endpoint():
