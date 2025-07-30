@@ -166,8 +166,11 @@ function addMarkers(markerData) {
         }).bindPopup(`
             <div class="popup-content-large">
                 <b>Date:</b> ${data.date}<br>
-                <b>Polymers:</b> ${data.type}<br>
                 <b>Density:</b> ${data.density} pcs/cm³<br>
+                <b>Polymer Composition:</b><br>
+                &nbsp;&nbsp;• Polystyrene (PS): <b>${data.percentPS}%</b><br>
+                &nbsp;&nbsp;• Polypropylene (PP): <b>${data.percentPP}%</b><br>
+                &nbsp;&nbsp;• Polyethylene (PE): <b>${data.percentPE}%</b><br>
                 <img src="${data.image}" alt="Sample" class="sample-image" style="max-width:200px;max-height:200px;display:block;margin:8px auto;border-radius:8px;cursor:zoom-in;"><br>
                 ${data.annotatedimageurl ? `<a href="${data.annotatedimageurl}" target="_blank">Annotated</a>` : ''}
             </div>

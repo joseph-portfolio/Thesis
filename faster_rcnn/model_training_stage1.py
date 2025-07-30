@@ -13,8 +13,8 @@ from io import BytesIO
 
 # AWS S3 settings
 BUCKET_NAME = "rpi-upload-bucket"
-TRAIN_PREFIX = "Dataset/train"
-VALID_PREFIX = "Dataset/valid"
+TRAIN_PREFIX = "Dataset/train_new/stage1"
+VALID_PREFIX = "Dataset/valid_new/stage1"
 SUPPORTED_EXTS = (".jpg", ".jpeg", ".png")
 
 # Initialize S3 client
@@ -50,6 +50,13 @@ class S3CocoDataset(Dataset):
                     self.image_keys.append(key)
         print(f"Found {len(self.image_keys)} images in {prefix}")
 
+        # Filter out images with no valid boxes
+        self.image_keys = [
+            key for key in self.image_keys
+            if self._has_valid_boxes(os.path.basename(key))
+        ]
+        print(f"Filtered to {len(self.image_keys)} images with valid boxes in {prefix}")
+
     def load_annotations_from_s3(self, key):
         response = s3.get_object(Bucket=self.bucket_name, Key=key)
         annotation_bytes = response['Body'].read()
@@ -75,6 +82,12 @@ class S3CocoDataset(Dataset):
         file_name = os.path.basename(image_key)
         target = self.process_annotations(file_name)
 
+        # If no valid boxes, skip to next image (should not happen due to filtering)
+        if target["boxes"].shape[0] == 0:
+            print(f"Warning: {file_name} has no valid boxes, skipping.")
+            next_idx = (idx + 1) % len(self.image_keys)
+            return self.__getitem__(next_idx)
+
         if self.transforms:
             image, target = self.transforms(image, target)
 
@@ -96,7 +109,8 @@ class S3CocoDataset(Dataset):
             x, y, w, h = bbox
             if w > 0 and h > 0:  # Ensure valid bounding boxes
                 boxes.append([x, y, x + w, y + h])  # Convert to [x_min, y_min, x_max, y_max]
-                labels.append(ann['category_id'])
+                # Always label as microplastic (category_id = 1)
+                labels.append(1)
 
         target = {
             "boxes": torch.tensor(boxes, dtype=torch.float32),
@@ -104,6 +118,14 @@ class S3CocoDataset(Dataset):
         }
         print(f"Processed annotations for {file_name}: {len(boxes)} boxes")
         return target
+
+    def _has_valid_boxes(self, file_name):
+        annotations = self.annotations.get(file_name, [])
+        for ann in annotations:
+            bbox = ann['bbox']
+            if bbox[2] > 0 and bbox[3] > 0:
+                return True
+        return False
 
 # Define transformations
 class CocoTransform:
@@ -217,6 +239,7 @@ def main():
         lr_scheduler.step()
 
         # Save the model's state dictionary after every epoch
+        os.makedirs("faster_rcnn/models", exist_ok=True)
         model_path = f"faster_rcnn/models/fasterrcnn_resnet50_epoch_{epoch + 1}.pth"
         torch.save(model.state_dict(), model_path)
         print(f"Model saved: {model_path}")
@@ -225,5 +248,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

@@ -13,8 +13,8 @@ from io import BytesIO
 
 # AWS S3 settings
 BUCKET_NAME = "rpi-upload-bucket"
-TRAIN_PREFIX = "Dataset/train"
-VALID_PREFIX = "Dataset/valid"
+TRAIN_PREFIX = "Dataset/train_new/stage2"
+VALID_PREFIX = "Dataset/valid_new/stage2"
 SUPPORTED_EXTS = (".jpg", ".jpeg", ".png")
 
 # Initialize S3 client
@@ -50,6 +50,13 @@ class S3CocoDataset(Dataset):
                     self.image_keys.append(key)
         print(f"Found {len(self.image_keys)} images in {prefix}")
 
+        # Filter out images with no valid boxes
+        self.image_keys = [
+            key for key in self.image_keys
+            if self._has_valid_boxes(os.path.basename(key))
+        ]
+        print(f"Filtered to {len(self.image_keys)} images with valid boxes in {prefix}")
+
     def load_annotations_from_s3(self, key):
         response = s3.get_object(Bucket=self.bucket_name, Key=key)
         annotation_bytes = response['Body'].read()
@@ -74,6 +81,12 @@ class S3CocoDataset(Dataset):
         # Load corresponding annotations
         file_name = os.path.basename(image_key)
         target = self.process_annotations(file_name)
+
+        # If no valid boxes, skip to next image (should not happen due to filtering)
+        if target["boxes"].shape[0] == 0:
+            print(f"Warning: {file_name} has no valid boxes, skipping.")
+            next_idx = (idx + 1) % len(self.image_keys)
+            return self.__getitem__(next_idx)
 
         if self.transforms:
             image, target = self.transforms(image, target)
@@ -105,6 +118,14 @@ class S3CocoDataset(Dataset):
         print(f"Processed annotations for {file_name}: {len(boxes)} boxes")
         return target
 
+    def _has_valid_boxes(self, file_name):
+        annotations = self.annotations.get(file_name, [])
+        for ann in annotations:
+            bbox = ann['bbox']
+            if bbox[2] > 0 and bbox[3] > 0:
+                return True
+        return False
+    
 # Define transformations
 class CocoTransform:
     def __call__(self, image, target):
@@ -176,7 +197,10 @@ def evaluate_model_with_map(model, data_loader, device):
     results = metric.compute()
     print("Evaluation Results (mAP):")
     for k, v in results.items():
-        print(f"{k}: {v:.4f}")
+        if isinstance(v, torch.Tensor) and v.numel() == 1:
+            print(f"{k}: {float(v):.4f}")
+        else:
+            print(f"{k}: {v}")
 
 def main():
     print("Loading datasets from S3")
@@ -210,14 +234,16 @@ def main():
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
 
     # Training loop
-    num_epochs = 3  # Adjust as needed
+    num_epochs = 1  # Adjust as needed
     for epoch in range(num_epochs):
+        os.makedirs("faster_rcnn/models", exist_ok=True)
         print(f"Processing Epoch {epoch + 1}...")
         train_one_epoch(model, optimizer, train_loader, device, epoch)
         lr_scheduler.step()
 
         # Save the model's state dictionary after every epoch
-        model_path = f"faster_rcnn/models/fasterrcnn_resnet50_epoch_{epoch + 1}.pth"
+        os.makedirs("faster_rcnn/models", exist_ok=True)
+        model_path = f"faster_rcnn/models/fasterrcnn_resnet50_epoch_{epoch + 1}_stage2.pth"
         torch.save(model.state_dict(), model_path)
         print(f"Model saved: {model_path}")
 

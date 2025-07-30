@@ -71,7 +71,9 @@ def filter_markers():
             "lat": float(item['latitude']),
             "lon": float(item['longitude']),
             "density": float(item['density']),
-            # "type": item['polymerType'],
+            "percentPS": item.get('percent_PS', 0),
+            "percentPP": item.get('percent_PP', 0),
+            "percentPE": item.get('percent_PE', 0),
             "date": item['datetime'],
             "image": item['imageURL'],
             "annotatedimageurl": item['annotatedImageURL']

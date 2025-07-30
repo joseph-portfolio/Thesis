@@ -102,11 +102,11 @@ def capture_image_and_upload():
                 ContentType='application/json',
                 Body=json.dumps(payload)
             )
-            inference_result = json.loads(response['Body'].read())
-            print(f"Inference result: {inference_result}")
+            inference_result_stage1 = json.loads(response['Body'].read())
+            print(f"Inference result: {inference_result_stage1}")
         except Exception as e:
             print(f"Error calling inference endpoint: {e}")
-            inference_result = None
+            inference_result_stage1 = None
 
         # Get latitude and longitude from GPS
         location = get_location()
@@ -127,9 +127,9 @@ def capture_image_and_upload():
             "latitude": latitude,
             "longitude": longitude,
         }
-        if inference_result:
-            annotated_url = inference_result.get("annotated_image_url")
-            box_count = inference_result.get("box_count")
+        if inference_result_stage1:
+            annotated_url = inference_result_stage1.get("annotated_image_url")
+            box_count = inference_result_stage1.get("box_count")
             if annotated_url is not None:
                 item["annotatedImageURL"] = annotated_url
             if box_count is not None:
@@ -138,6 +138,24 @@ def capture_image_and_upload():
                     item["density"] = float(box_count) / 70 # Volume of water
                 except Exception:
                     item["density"] = None
+
+            # Stage 2:
+            print(f"Calling classify-microplastics endpoint with: {payload}")
+            try:
+                classify_response = runtime.invoke_endpoint(
+                    EndpointName='classify-microplastics',
+                    ContentType='application/json',
+                    Body=json.dumps(payload)
+                )
+                inference_result_stage2 = json.loads(classify_response['Body'].read())
+                print(f"Classification result: {inference_result_stage2}")
+                # Append percent composition to DynamoDB item
+                item["percent_PS"] = inference_result_stage2.get("percent_PS")
+                item["percent_PP"] = inference_result_stage2.get("percent_PP")
+                item["percent_PE"] = inference_result_stage2.get("percent_PE")
+            except Exception as e:
+                print(f"Error calling classify-microplastics endpoint: {e}")
+
         table.put_item(Item=item)
         print(f"Image URL inserted into DynamoDB with sampleID {new_sample_id}!")
 
