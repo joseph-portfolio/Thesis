@@ -139,7 +139,8 @@ def capture_image_and_upload():
                 except Exception:
                     item["density"] = None
 
-            # Stage 2:
+        # Only classify if at least one box is detected
+        if box_count and box_count > 0:
             print(f"Calling classify-microplastics endpoint with: {payload}")
             try:
                 classify_response = runtime.invoke_endpoint(
@@ -149,12 +150,16 @@ def capture_image_and_upload():
                 )
                 inference_result_stage2 = json.loads(classify_response['Body'].read())
                 print(f"Classification result: {inference_result_stage2}")
-                # Append percent composition to DynamoDB item
                 item["percent_PS"] = inference_result_stage2.get("percent_PS")
                 item["percent_PP"] = inference_result_stage2.get("percent_PP")
                 item["percent_PE"] = inference_result_stage2.get("percent_PE")
             except Exception as e:
                 print(f"Error calling classify-microplastics endpoint: {e}")
+        else:
+            # No microplastics detected, set percent composition to zero
+            item["percent_PS"] = 0.0
+            item["percent_PP"] = 0.0
+            item["percent_PE"] = 0.0
 
         table.put_item(Item=item)
         print(f"Image URL inserted into DynamoDB with sampleID {new_sample_id}!")
