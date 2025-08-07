@@ -4,6 +4,8 @@
 
 ## 🚀 Live Demo
 
+https://github.com/user-attachments/assets/dd8f5d43-eaa8-4cf3-ada0-d447d15002bd
+
 - https://thesis-g13y.onrender.com/
 
 ## 🌟 Features
@@ -22,46 +24,6 @@
 4. **Data Storage**: Results, including detection data and GPS coordinates, are stored in AWS DynamoDB
 5. **Media Storage**: Original and annotated images are saved to AWS S3
 6. **Web Visualization**: A Flask-based web dashboard displays the data with interactive maps and charts
-
-## 🏗️ Prerequisites
-
-- Python 3.8+
-- Raspberry Pi with Camera Module
-- GPS Module
-- AWS Account (for deployment)
-
-## 🚀 Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/microplastic-detection.git
-   cd microplastic-detection
-   ```
-
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Set up environment variables:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
-
-## 🖥️ Usage
-
-1. Start the capture service on the Raspberry Pi:
-   ```bash
-   python rpi/capture.py
-   ```
-
-2. Launch the web application:
-   ```bash
-   python app.py
-   ```
-
-3. Access the dashboard at `http://localhost:5000`
 
 ## 🤖 AI Model
 
