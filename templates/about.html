@@ -6,13 +6,18 @@
     <title>About - Microplastic Mapping</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
     <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
     
     <!-- JS Libraries -->
     <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
     <script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+
 </head>
 <body>
     <div class="app-shell">
@@ -35,26 +40,30 @@
             </nav>
         </header>
         <div class="main-content">
-            <div class="about-container" style="padding: 2rem; max-width: 800px; margin: 0 auto; background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #e5e7eb;">
+            <div class="about-container" style="padding: 2rem; max-width: 800px; margin: 20px auto 0 auto; background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #e5e7eb;">
                 <h2 style="color: #2563eb; font-size: 1.8rem; margin-bottom: 1.5rem; font-weight: 600;">About the Project</h2>
                 
                 <div style="font-size: 1rem; line-height: 1.6; color: #374151;">
                     <p>This project is dedicated to analyzing and mapping microplastic samples from <b>Laguna de Bay</b>. The <b>Water Surface Vessel (WSV)</b> collects these samples to monitor the presence and distribution of microplastics.</p>
                     
-                    <h3 style="color: #2563eb; font-size: 1.4rem; margin: 1.5rem 0 0.8rem; font-weight: 600;">h3</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quos, modi fugit dolores voluptatum dolore nostrum vero ad alias veritatis! Vel soluta temporibus aperiam omnis id perspiciatis illo eos distinctio doloremque.</p>
-                    
-                    <h3 style="color: #2563eb; font-size: 1.4rem; margin: 1.5rem 0 0.8rem; font-weight: 600;">h3</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo aut veritatis error perferendis labore. Error enim illo omnis at quo, praesentium perferendis tempore, ab unde pariatur ex, sed magnam laborum.</p>
-                    
-                    <h3 style="color: #2563eb; font-size: 1.4rem; margin: 1.5rem 0 0.8rem; font-weight: 600;">h3</h3>
-                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Adipisci, numquam eaque, eum unde debitis veritatis earum ratione fuga labore magnam minima. Libero et est dolor sequi tempora blanditiis soluta eius!</p>
+                    <div class="video-container" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin: 2rem 0; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <iframe 
+                            width="100%" 
+                            height="100%" 
+                            src="https://www.youtube.com/embed/XbIhSXONTBQ" 
+                            title="Microplastic Detection System Demo" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;">
+                        </iframe>
+                    </div>
                     
                     <div style="margin-top: 2rem; padding: 1.5rem; background: #f6f8fa; border-radius: 8px; border-left: 4px solid #2563eb;">
                         <h3 style="color: #2563eb; font-size: 1.4rem; margin: 0 0 0.8rem; font-weight: 600;">Contact Information</h3>
                         <p>For more information about this project, please contact:</p>
                         <p style="margin-top: 0.5rem;">
-                            Email: <a href="mailto:202010910@feualabang.edu.ph" class="sidebar-link">202010910@feualabang.edu.ph</a><br>
+                            Email: <a href="mailto:jaguillermo39@gmail.com" class="sidebar-link">jaguillermo39@gmail.com</a><br>
                         </p>
                     </div>
                 </div>
