@@ -1,12 +1,12 @@
 # Microplastic Detection and Classification System
 
-- A comprehensive system for detecting and classifying microplastics collected in surface water using computer vision and geolocation data.
+A comprehensive system for detecting and classifying microplastics collected from surface water using Faster R-CNN, while simultaneously mapping their locations.
 
-## 🚀 Live Demo
+[Live Demo](https://thesis-g13y.onrender.com/)
+
+## 🚀 Demo
 
 https://github.com/user-attachments/assets/dd8f5d43-eaa8-4cf3-ada0-d447d15002bd
-
-- https://thesis-g13y.onrender.com/
 
 ## 🌟 Features
 
@@ -16,14 +16,9 @@ https://github.com/user-attachments/assets/dd8f5d43-eaa8-4cf3-ada0-d447d15002bd
 - **Data Visualization**: Interactive dashboard for viewing detection results
 - **Geospatial Mapping**: Visualizes microplastic distribution on an interactive map
 
-## 📊 Data Flow
+## Example Output
 
-1. **Image Capture**: Raspberry Pi camera captures high-resolution images of water samples
-2. **GPS Logging**: Concurrently records precise GPS coordinates for each sample
-3. **AI Processing**: Image is processed by the Faster R-CNN model to detect microplastics and classify polymer types (PE, PP, PS)
-4. **Data Storage**: Results, including detection data and GPS coordinates, are stored in AWS DynamoDB
-5. **Media Storage**: Original and annotated images are saved to AWS S3
-6. **Web Visualization**: A Flask-based web dashboard displays the data with interactive maps and charts
+<img width="960" height="543" alt="804_annotated" src="https://github.com/user-attachments/assets/6c471cdc-1f0f-40cf-9c8b-05b7dc623fb0" />
 
 ## 🤖 AI Model
 
@@ -31,6 +26,16 @@ The system uses a pre-trained Faster R-CNN model fine-tuned for microplastic det
 
 - Microplastics
 - Polymer types (PE PP, PS)
+
+
+## 📊 Procedure
+
+1. **Image Capture**: Raspberry Pi camera captures high-resolution images of water samples
+2. **GPS Logging**: Concurrently records precise GPS coordinates for each sample
+3. **AI Processing**: Image is processed by the Faster R-CNN model to detect microplastics and classify polymer types (PE, PP, PS)
+4. **Data Storage**: Results, including detection data and GPS coordinates, are stored in AWS DynamoDB
+5. **Media Storage**: Original and annotated images are saved to AWS S3
+6. **Web Visualization**: A Flask-based web dashboard displays the data with interactive maps and charts
 
 ## 🌍 Deployment
 
